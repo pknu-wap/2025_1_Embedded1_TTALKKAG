@@ -5,17 +5,8 @@
 <br/>
 <br/>
 
-# 0. Getting Started (시작하기)
-```bash
-$ npm start
-```
-[서비스 링크](링크)
-
-<br/>
-<br/>
-
 # 1. Project Overview (프로젝트 개요)
-- 프로젝트 이름: 
+- 프로젝트 이름: 딸깍
 - 프로젝트 설명: MQTT을 기반으로 한 스마트 홈 시스템
 
 <br/>
@@ -24,13 +15,13 @@ $ npm start
 # 2. Team Members (팀원 및 팀 소개)
 | 김동건 | 강유경 | 장혜림 | 고근호 | 홍우민 | 김예람 |
 |:------:|:------:|:------:|:------:|:------:|:------:|
-| <img src="" alt="프사1" width="150"> | <img src="" alt="프사2" width="150"> | <img src="" alt="프사3" width="150"> | <img src="" alt="프사4" width="150"> | <img src="" alt="프사4" width="150"> | <img src="" alt="프사4" width="150"> |
+| <img src="https://avatars.githubusercontent.com/u/125544913?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202641007?v=4" alt="" width="150"> | <img src="![Image](https://github.com/user-attachments/assets/d7a3cc16-6a66-43fc-94ee-164b74f26141)" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/95072015?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/155062635?v=4" alt="" width="150"> | <img src="![Image](https://github.com/user-attachments/assets/47329a97-0696-48cb-8a11-09258d881893)" alt="" width="150"> |
 | HW, SW | HW, SW | FE | BE | BE | Design |
-| [GitHub](https://github.com/LDK1009) | [GitHub](https://github.com/SinYusi) | [GitHub](https://github.com/nay3on) | [GitHub](https://github.com/conconcc) |
+| [GitHub](https://github.com/Danny-Caesar) | [GitHub](https://github.com/dbrud919) |  | [GitHub](https://github.com/kokeunho) | [GitHub](https://github.com/hongwoomin02) |  |
 
 <br/>
 <br/>
-
+<!--
 # 3. Key Features (주요 기능)
 - **회원가입**:
   - 회원가입 시 DB에 유저정보가 등록됩니다.
