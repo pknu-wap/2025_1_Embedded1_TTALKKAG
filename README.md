@@ -1,5 +1,5 @@
 <a href="https://club-project-one.vercel.app/" target="_blank">
-<img src="https://imageio.forbes.com/blogs-images/ogdenpayne/files/2017/02/Daniel-Caesar-NEw-by-Keith-Henry.jpg?format=jpg&height=900&width=1600&fit=bounds" alt="배너" width="100%"/>
+<img src="https://github.com/user-attachments/assets/2368e03a-a5c1-4267-a486-616542e8f06e" alt="배너" width="100%"/>
 </a>
 
 <br/>
@@ -7,7 +7,7 @@
 
 # 1. Project Overview (프로젝트 개요)
 - 프로젝트 이름: 딸깍
-- 프로젝트 설명: MQTT을 기반으로 한 스마트 홈 시스템
+- 프로젝트 설명: MQTT 통신을 기반으로 한 스마트 홈 시스템입니다.
 
 <br/>
 <br/>
@@ -15,38 +15,32 @@
 # 2. Team Members (팀원 및 팀 소개)
 | 김동건 | 강유경 | 장혜림 | 고근호 | 홍우민 | 김예람 |
 |:------:|:------:|:------:|:------:|:------:|:------:|
-| <img src="https://avatars.githubusercontent.com/u/125544913?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202641007?v=4" alt="" width="150"> | <img src="![Image](https://github.com/user-attachments/assets/d7a3cc16-6a66-43fc-94ee-164b74f26141)" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/95072015?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/155062635?v=4" alt="" width="150"> | <img src="![Image](https://github.com/user-attachments/assets/47329a97-0696-48cb-8a11-09258d881893)" alt="" width="150"> |
+| <img src="https://avatars.githubusercontent.com/u/125544913?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202641007?v=4" alt="" width="150"> | <img src="https://github.com/user-attachments/assets/d7a3cc16-6a66-43fc-94ee-164b74f26141" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/95072015?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/155062635?v=4" alt="" width="150"> | <img src="https://github.com/user-attachments/assets/2b0b2308-bf16-4f0d-807a-545696ae0e44" alt="" width="150"> |
 | HW, SW | HW, SW | FE | BE | BE | Design |
 | [GitHub](https://github.com/Danny-Caesar) | [GitHub](https://github.com/dbrud919) |  | [GitHub](https://github.com/kokeunho) | [GitHub](https://github.com/hongwoomin02) |  |
 
 <br/>
 <br/>
-<!--
+
 # 3. Key Features (주요 기능)
-- **회원가입**:
-  - 회원가입 시 DB에 유저정보가 등록됩니다.
+- **MQTT**:
+  - MQTT(Message Queuing Telemetry Transport)는 ISO 표준 발행-구독 기반의 메시징 프로토콜입니다.
+  - IoT 환경에서 오픈소스 및 라이브러리 없이 MQTT 네트워크를 구현하는 것을 목표하고 있습니다.
+  - 앱 BE에서 자바 스프링을 사용해 허브와 MQTT 통신을 수행합니다.
 
-- **로그인**:
-  - 사용자 인증 정보를 통해 로그인합니다.
+- **클라이언트**:
+  - 조작에 따라 버튼을 누르는 버튼 클리커
+  - 단계별로 다이얼을 회전하는 다이얼 액추에이터
+  - 문 열림을 감지하는 개폐감지센서
 
-- **내 동아리 일정관리**:
-  - 캘린더 UI를 통해 동아리 관련 일정 추가&삭제가 가능합니다.
-  - 체크박스를 통해 종료되거나 이미 수행한 일정을 표시할 수 있습니다.
+- **클라이언트 관리**:
+  - 한 화면에서 관리 중인 클라이언트를 확인할 수 있습니다.
+  - 실시간으로 브로커에 연결된 클라이언트가 추가/해제 됩니다.
 
-- **동아리 찾기**:
-  - 대학 내 동아리를 검색할 수 있습니다.
-  - 검색 시 해당 동아리가 업로드한 홍보글이 보여집니다.
-
-- **동아리 홍보**:
-  - 홍보글 등록을 통해 동아리를 홍보할 수 있습니다.
-
-- **동아리 만들기**:
-  - 새로운 동아리를 만들어 관리할 수 있습니다.
-
-- **동아리 프로필**:
-  - 동아리 홍보글에서 동아리 이름(링크)를 클릭하면 해당 동아리 프로필로 이동합니다.
-  - 동아리 프로필에서는 동아리 소개, 동아리 활동사진 갤러리, 동아리 홍보글 기록관 등을 볼 수 있습니다.
-
+- **클라이언트 조작 및 설정**:
+  - 각 클라이언트의 개별 페이지는 클라이언트의 정보를 표시하거나 변경할 수 있습니다.
+  - 클라이언트를 조작하고 설정할 수 있습니다.
+<!--
 <br/>
 <br/>
 
