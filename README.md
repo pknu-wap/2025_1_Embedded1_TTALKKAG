@@ -8,6 +8,7 @@
 # 1. Project Overview (프로젝트 개요)
 - 프로젝트 이름: 딸깍
 - 프로젝트 설명: MQTT 통신을 기반으로 한 스마트 홈 시스템입니다.
+- 임베디드 시스템 리포지토리: [딸깍-임베디드](https://github.com/Danny-Caesar/TTALKKAG)
 
 <br/>
 <br/>
