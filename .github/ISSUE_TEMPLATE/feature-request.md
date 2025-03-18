@@ -1,9 +1,10 @@
 ---
-name: Feature Template
-about: 기능에 관한 템플릿
+name: Feature request
+about: 작업할 기능에 대해 작성해주세요.
 title: ''
 labels: ''
 assignees: ''
+
 ---
 
 ## 📄 어떤 기능인가요?
