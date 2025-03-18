@@ -13,11 +13,11 @@
 <br/>
 
 # 2. Team Members (팀원 및 팀 소개)
-| 김동건 | 강유경 | 장혜림 | 고근호 | 홍우민 | 김예람 |
+| 김동건 | 강유경 | 장혜림 | 홍우민 | 고근호 | 김예람 |
 |:------:|:------:|:------:|:------:|:------:|:------:|
-| <img src="https://avatars.githubusercontent.com/u/125544913?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202641007?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202640692?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/95072015?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/155062635?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202640579?v=4" alt="" width="150"> |
-| HW, SW | HW, SW | FE | BE | BE | Design |
-| [GitHub](https://github.com/Danny-Caesar) | [GitHub](https://github.com/dbrud919) | [GitHub](https://github.com/hyerim819) | [GitHub](https://github.com/kokeunho) | [GitHub](https://github.com/hongwoomin02) | [GitHub](https://github.com/rlaexram) |
+| <img src="https://avatars.githubusercontent.com/u/125544913?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202641007?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202640692?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/155062635?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/95072015?v=4" alt="" width="150"> | <img src="https://avatars.githubusercontent.com/u/202640579?v=4" alt="" width="150"> |
+| Arduino, Raspberry Pi | Arduino, Raspberry Pi | RN | RN | Spring | Design |
+| [GitHub](https://github.com/Danny-Caesar) | [GitHub](https://github.com/dbrud919) | [GitHub](https://github.com/hyerim819) | [GitHub](https://github.com/hongwoomin02) | [GitHub](https://github.com/kokeunho) | [GitHub](https://github.com/rlaexram) |
 
 <br/>
 <br/>
