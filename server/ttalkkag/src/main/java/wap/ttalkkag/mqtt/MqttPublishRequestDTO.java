@@ -1,4 +1,4 @@
-package wap.ttalkkag.mqtt.dto;
+package wap.ttalkkag.mqtt;
 
 import lombok.Getter;
 import lombok.Setter;
