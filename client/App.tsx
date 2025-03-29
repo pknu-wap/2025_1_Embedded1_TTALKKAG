@@ -1,12 +1,10 @@
 import React from "react";
 import { View } from "react-native";
-import Background from "./src/screens/DevicePage/components/Background.js"; // 배경 컴포넌트 불러오기
+import DevicePage from "./src/screens/DevicePage"; 
 
 const App = () => {
   return (
-    <View style={{ flex: 1 }}>
-      <Background />  
-    </View>
+    <DevicePage/>
   );
 };
 
