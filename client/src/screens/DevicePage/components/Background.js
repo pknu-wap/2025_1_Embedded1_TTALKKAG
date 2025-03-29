@@ -13,7 +13,7 @@ const BackgroundGradient = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-
+      
       {/* 두 번째 Gradient (위에서 아래 방향) */}
       <LinearGradient
         style={{ position: "absolute", width: "100%", height: "100%" }}
