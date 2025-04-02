@@ -1,19 +1,20 @@
 import React from "react";
-import {View} from "react-native";
-import Background from "./components/Background.js"; 
-import {AppText, styles} from "./components/AppText.js"; 
-
+import { ScrollView, View, Text, StyleSheet } from "react-native";
+import Background from "./components/Background.js";
+import { AppText, styles as appTextStyles } from "./components/AppText.js";
 
 const DPage = () => {
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <Background />
-      <View style={{ position: "absolute", flexDirection: "column"}}>
-        <AppText style={styles.text1}>TTALKKAG</AppText>
-        <AppText style={styles.text2}>쉽고 편한 기기관리</AppText>
-        <AppText style={styles.text3}>My Devices</AppText>
-        <AppText style={styles.text4}>내 기기 My Devices</AppText>
-      </View>
+      <ScrollView>
+        <View>
+          <AppText style={appTextStyles.text1}>딸깍</AppText>
+          <AppText style={appTextStyles.text2}>쉽고 편한 기기관리</AppText>
+          <AppText style={appTextStyles.text3}>My Devices</AppText>
+          <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
+        </View>
+      </ScrollView>
     </View>
   );
 };
