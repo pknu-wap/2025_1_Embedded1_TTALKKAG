@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Background from "./components/Background.js";
 import { AppText, styles as appTextStyles } from "./components/AppText.js";
-
+import DeviceBox from "./components/DeviceBox.js";
 const DPage = () => {
   return (
     <View style={{ flex: 1 }}>
@@ -13,6 +13,7 @@ const DPage = () => {
           <AppText style={appTextStyles.text2}>쉽고 편한 기기관리</AppText>
           <AppText style={appTextStyles.text3}>My Devices</AppText>
           <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
+          <DeviceBox />
         </View>
       </ScrollView>
     </View>
