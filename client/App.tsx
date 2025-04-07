@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View,StyleSheet} from "react-native";
 import DevicePage from "./src/screens/DevicePage"; 
+import AnotherPage  from "./src/screens/DevicePage/AnotherPage";
 
 const Tab = createBottomTabNavigator();
 
@@ -24,7 +25,7 @@ const App = () => {
         }}
       >
         <Tab.Screen name="디바이스 목록 페이지" component={DevicePage} />
-        {/* <Tab.Screen name="트리거 목록 페이지" component={TriggerPage} /> */}
+        <Tab.Screen name="트리거 목록 페이지" component={AnotherPage} />
       </Tab.Navigator>
     </NavigationContainer>
   );
