@@ -21,7 +21,7 @@ public class Dial {
     private Long id;
 
     private String name;
-    private Boolean state;
+    private String clientId;
     private Integer step;
 
     @ManyToOne(fetch = FetchType.LAZY)

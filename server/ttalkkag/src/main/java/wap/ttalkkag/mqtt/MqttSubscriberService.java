@@ -17,7 +17,7 @@ import wap.ttalkkag.repository.UserRepository;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-//Mqtt 콜백 인터페이스
+/*Mqtt 콜백 인터페이스*/
 @Service
 public class MqttSubscriberService implements MqttCallback {
     private final MqttClient mqttClient;
@@ -35,12 +35,12 @@ public class MqttSubscriberService implements MqttCallback {
         this.userRepository = userRepository;
         this.doorRepository = doorRepository;
     }
-
-    public String subscribeToRegistrationTopic() {
+    @PostConstruct
+    public void subscribeToRegistrationTopic() {
         String topic = "hub/connect";
-
+        /*topic에 대해여 QoS 1로 연결*/
         try {
-            mqttClient.subscribe(topic, (t, message) -> {
+            mqttClient.subscribe(topic, 1,(t, message) -> {
                 String payload = new String(message.getPayload());
                 System.out.println("기기 등록 요청 수신: " + payload);
 
@@ -49,68 +49,60 @@ public class MqttSubscriberService implements MqttCallback {
                 JsonNode jsonNode = objectMapper.readTree(payload);
                 String name = jsonNode.get("name").asText();
                 String type = jsonNode.get("type").asText();
-                String serial = jsonNode.get("serial").asText();
+                String clientId = jsonNode.get("clientId").asText();
                 //DB에 저장
-                Long deviceId = saveDeviceToDB(name, type);
-                //등록 응답을 회신
-                sendDeviceApprovalResponse(deviceId, type, serial);
+                saveDeviceToDB(name, type, clientId);
 
-                mqttClient.unsubscribe(topic);
+                /*기기 등록을 1회만 한다면 주석 제거
+                mqttClient.unsubscribe(topic);*/
             });
-            return "기기 등록 요청 대기 중...";
         } catch (Exception e) {
             e.printStackTrace();
-            return "기기 등록 실패";
         }
     }
     //db에 기기를 저장하고 db내 ID를 추출하여 반환
-    private Long saveDeviceToDB(String name, String type) {
+    private void saveDeviceToDB(String name, String type, String clientId) {
         User user = userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
-        if ("button".equalsIgnoreCase(type)) {
-            Button button = new Button();
-            button.setName(name);
-            button.setState(false);    //state는 필요한지 잘 모르겠음
-            button.setUser(user);
-            buttonRepository.save(button);
-            return button.getId();
-        } else if ("dial".equalsIgnoreCase(type)) {
-            Dial dial = new Dial();
-            dial.setName(name);
-            dial.setState(false);  //state는 필요한지 잘 모르겠음
-            dial.setStep(0);
-            dial.setUser(user);
-            dialRepository.save(dial);
-            return dial.getId();
-        } else if ("door".equalsIgnoreCase(type)) {
-            Door door = new Door();
-            door.setName(name);
-            door.setState(false);
-            door.setUser(user);
-            doorRepository.save(door);
-            return door.getId();
-        } else {
-            throw new IllegalArgumentException("Invalid device type: " + type);
-        }
-    }
-    /*기기 등록 승인 응답을 회신
-    * 그러기 위해 기기는 등록을 요청할 때 serial을 보냄
-    * 서버에게 승인 응답을 받을 토픽을 구독하고 있어야 함
-    * 서버는 payload로 deviceId를 보내고 기기는 해당 deviceId로 토픽을 새로 구독*/
-    private void sendDeviceApprovalResponse(Long deviceId, String type, String serial) {
-        try {
-            String responseTopic = "hub/connect/response/" + serial;
-            String responseMessage = "{ \"status\": \"approved\", \"deviceId\": " + deviceId
-                    + ", \"type\": \"" + type + "\" }";
-
-            mqttClient.publish(responseTopic, new MqttMessage(responseMessage.getBytes()));
-            System.out.println("기기 등록 승인 응답 발행: " + responseMessage);
-        } catch (Exception e) {
-            e.printStackTrace();
+        switch (type.toLowerCase()) {
+            case "button" -> {
+                if (buttonRepository.existsByClientId(clientId)) {
+                    System.out.println("이미 등록된 기기입니다.");
+                    return;
+                }
+                Button button = new Button();
+                button.setName(name);
+                button.setUser(user);
+                button.setClientId(clientId);
+                buttonRepository.save(button);
+            }
+            case "dial" -> {
+                if (dialRepository.existsByClientId(clientId)) {
+                    System.out.println("이미 등록된 기기입니다.");
+                    return;
+                }
+                Dial dial = new Dial();
+                dial.setName(name);
+                dial.setStep(0);
+                dial.setUser(user);
+                dial.setClientId(clientId);
+                dialRepository.save(dial);
+            }
+            case "door" -> {
+                if (doorRepository.existsByClientId(clientId)) {
+                    System.out.println("이미 등록된 기기입니다.");
+                    return;
+                }
+                Door door = new Door();
+                door.setName(name);
+                door.setUser(user);
+                door.setClientId(clientId);
+                doorRepository.save(door);
+            }
+            default -> throw new IllegalArgumentException("틀린 디바이스 타입");
         }
     }
 
-
-   /** //애플리케이션이 실행되면 자동으로 실행되어 {topicFilter}를 구독
+   /* //애플리케이션이 실행되면 자동으로 실행되어 {topicFilter}를 구독
     @PostConstruct
     public void subscribeToTopic() {
         try {
@@ -120,7 +112,7 @@ public class MqttSubscriberService implements MqttCallback {
         } catch (MqttException e) {
             e.printStackTrace();
         }
-    } **/
+    } */
 
     //Mqtt 연결이 끊어졌을 시 로그 출력
     //TODO: 자동 재연결 로직을 추가

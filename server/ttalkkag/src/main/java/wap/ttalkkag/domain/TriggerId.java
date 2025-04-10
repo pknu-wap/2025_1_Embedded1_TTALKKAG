@@ -2,13 +2,8 @@ package wap.ttalkkag.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import wap.ttalkkag.domain.enums.DeviceType;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -24,12 +19,11 @@ public class TriggerId implements Serializable {
     private Long deviceId;
 
     @Column(name = "device_type")
-    @Enumerated(EnumType.STRING)
-    private DeviceType deviceType;
+    private String deviceType;
 
     public TriggerId() {}
 
-    public TriggerId(Long doorId, Long deviceId, DeviceType deviceType) {
+    public TriggerId(Long doorId, Long deviceId, String deviceType) {
         this.doorId = doorId;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
