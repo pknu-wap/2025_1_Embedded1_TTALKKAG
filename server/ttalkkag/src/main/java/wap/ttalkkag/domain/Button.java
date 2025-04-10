@@ -21,7 +21,7 @@ public class Button {
     private Long id;
 
     private String name;
-    private Boolean state;
+    private String clientId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)

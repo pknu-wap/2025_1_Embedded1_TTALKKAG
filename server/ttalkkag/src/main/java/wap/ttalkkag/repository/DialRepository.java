@@ -6,4 +6,5 @@ import wap.ttalkkag.domain.Dial;
 
 @Repository
 public interface DialRepository extends JpaRepository<Dial, Long> {
+    boolean existsByClientId(String clientId);
 }

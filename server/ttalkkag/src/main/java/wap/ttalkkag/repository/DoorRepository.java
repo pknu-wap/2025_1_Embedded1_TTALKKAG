@@ -6,4 +6,5 @@ import wap.ttalkkag.domain.Door;
 
 @Repository
 public interface DoorRepository extends JpaRepository<Door, Long> {
+    boolean existsByClientId(String clientId);
 }

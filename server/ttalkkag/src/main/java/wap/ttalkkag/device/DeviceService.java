@@ -2,6 +2,8 @@ package wap.ttalkkag.device;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
@@ -19,6 +21,7 @@ public class DeviceService {
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
     private final DoorRepository doorRepository;
+    private final MqttClient mqttClient;
 
     /*해당 userId에 연관된 디바이스 목록을 가져옴*/
     public User getRegisteredDevices(Long userId) {
@@ -26,59 +29,58 @@ public class DeviceService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
-    /*device의 이름을 변경
-    TODO: 현재 user가 설정하고자 하는 device의 변경 권한을 가지고 있는지 확인하는 코드를 리팩토링
-          중복된 코드도 많음.*/
-    public void updateDeviceName(Long userId, ChangeDeviceSettingDTO request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
+    /*device의 이름을 변경*/
+    public void updateDeviceName(ChangeDeviceSettingDTO request) {
         Long deviceId = request.getDeviceId();
         String newName = request.getNewName();
         switch (request.getType()) {
-            case "button" -> {
+            case "button_clicker" -> {
                 Button button = buttonRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!button.getUser().equals(user)) throw new RuntimeException("No change permission");
-
                 button.setName(newName);
                 buttonRepository.save(button);
             }
-            case "dial" -> {
+            case "dial_actuator" -> {
                 Dial dial = dialRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!dial.getUser().equals(user)) throw new RuntimeException("No change permission");
                 dial.setName(newName);
                 dialRepository.save(dial);
             }
-            case "door" -> {
+            case "door_sensor" -> {
                 Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!door.getUser().equals(user)) throw new RuntimeException("No change permission");
                 door.setName(newName);
                 doorRepository.save(door);
             }
             default -> throw new IllegalArgumentException("Wrong device type");
         }
     }
-    /*기기 삭제, 삭제 권한이 있는지 확인 후 삭제*/
-    public void deleteDevice(Long userId, DeleteDeviceDTO request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
+    /*기기 삭제, 등록 해제 메시지 mqtt로 기기에 수신*/
+    public void deleteDevice(DeleteDeviceDTO request) {
         Long deviceId = request.getDeviceId();
-        switch(request.getType()) {
-            case "button" -> {
+        String type = request.getType();
+        String clientId;
+        switch(type) {
+            case "button_clicker" -> {
                 Button button = buttonRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!button.getUser().equals(user)) throw new RuntimeException("No change permission");
+                clientId = button.getClientId();
                 buttonRepository.delete(button);
             }
-            case "dial" -> {
+            case "dial_actuator" -> {
                 Dial dial = dialRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!dial.getUser().equals(user)) throw new RuntimeException("No change permission");
+                clientId = dial.getClientId();
                 dialRepository.delete(dial);
             }
-            case "door" -> {
+            case "door_sensor" -> {
                 Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                if (!door.getUser().equals(user)) throw new RuntimeException("No change permission");
+                clientId = door.getClientId();
                 doorRepository.delete(door);
             }
             default -> throw new IllegalArgumentException("Wrong device type");
+        }
+        /*연결 해제 토픽 발행
+        파라미터: 토픽, 페이로드, QoS, retain 여부*/
+        try {
+            mqttClient.publish("server/disconnect/" + type + "/" + clientId, new byte[0], 1, false);
+        } catch (MqttException e) {
+            e.printStackTrace();
         }
     }
 }

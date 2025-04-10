@@ -6,4 +6,5 @@ import wap.ttalkkag.domain.Button;
 
 @Repository
 public interface ButtonRepository extends JpaRepository<Button, Long> {
+    boolean existsByClientId(String clientId);
 }

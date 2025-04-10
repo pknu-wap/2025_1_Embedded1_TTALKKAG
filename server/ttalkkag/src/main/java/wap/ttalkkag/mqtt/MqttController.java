@@ -14,11 +14,11 @@ public class MqttController {
         this.mqttSubscriberService = mqttSubscriberService;
     }
 
-    //새로운 기기 등록
+    /*새로운 기기 등록 버튼을 눌러서 등록한다면 주석 제거
     @PostMapping("/new-device")
     public String registerDevice() {
         return mqttSubscriberService.subscribeToRegistrationTopic();
-    }
+    }*/
 
     /* //토픽, 메시지 지정 후 발행
     @PostMapping("/publish")
@@ -26,7 +26,6 @@ public class MqttController {
         mqttPublisherSevice.publishMessage(request.getTopic(), request.getMessage());
         return "Message sent to topic: " + request.getTopic();
     }
-
 
     //구독 중인 토픽 내에 최신 메시지 return
     @GetMapping("/last-message")
