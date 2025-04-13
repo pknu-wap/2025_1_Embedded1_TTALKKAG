@@ -1,17 +1,36 @@
 package wap.ttalkkag.mqtt;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import wap.ttalkkag.domain.Button;
+import wap.ttalkkag.repository.ButtonRepository;
 
 @RestController
 @RequestMapping("/mqtt")
 public class MqttController {
     private final MqttPublisherSevice mqttPublisherSevice;
     private final MqttSubscriberService mqttSubscriberService;
+    private final ButtonRepository buttonRepository;
 
     public MqttController(MqttPublisherSevice mqttPublisherSevice,
-                          MqttSubscriberService mqttSubscriberService) {
+                          MqttSubscriberService mqttSubscriberService, ButtonRepository buttonRepository) {
         this.mqttPublisherSevice = mqttPublisherSevice;
         this.mqttSubscriberService = mqttSubscriberService;
+        this.buttonRepository = buttonRepository;
+    }
+    /*버튼 클릭커 원격 조정*/
+    @PostMapping("/{device_id}/press")
+    public ResponseEntity<Void> pressButton(@PathVariable("device_id") Long device_id) {
+        /*잘못된 버튼 id*/
+        Button button = buttonRepository.findById(device_id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid device id"));
+        /*토픽: server/{type}/{client_id}/action*/
+        String topic = "server/button_clicker/" + button.getClientId() + "/action";
+        mqttPublisherSevice.publish(topic, "");
+
+        return ResponseEntity.ok().build();
     }
 
     /*새로운 기기 등록 버튼을 눌러서 등록한다면 주석 제거
