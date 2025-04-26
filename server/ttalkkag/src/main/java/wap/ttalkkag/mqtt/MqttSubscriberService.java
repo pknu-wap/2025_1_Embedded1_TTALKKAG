@@ -2,8 +2,8 @@ package wap.ttalkkag.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import org.eclipse.paho.client.mqttv3.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
@@ -14,48 +14,49 @@ import wap.ttalkkag.repository.DialRepository;
 import wap.ttalkkag.repository.DoorRepository;
 import wap.ttalkkag.repository.UserRepository;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /*Mqtt 콜백 인터페이스*/
 @Service
 public class MqttSubscriberService implements MqttCallback {
-    private final MqttClient mqttClient;
+    private final MqttService mqttService;
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
     private final UserRepository userRepository;
-    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
     private final DoorRepository doorRepository;
 
-    public MqttSubscriberService(MqttClient mqttClient, ButtonRepository buttonRepository,
+    @Autowired
+    public MqttSubscriberService(MqttService mqttService, ButtonRepository buttonRepository,
                                  DialRepository dialRepository, UserRepository userRepository, DoorRepository doorRepository) {
-        this.mqttClient = mqttClient;
+        this.mqttService = mqttService;
         this.buttonRepository = buttonRepository;
         this.dialRepository = dialRepository;
         this.userRepository = userRepository;
         this.doorRepository = doorRepository;
     }
-    @PostConstruct
+
     public void subscribeToRegistrationTopic() {
         String topic = "hub/connect";
         /*topic에 대해여 QoS 1로 연결*/
         try {
-            mqttClient.subscribe(topic, 1,(t, message) -> {
-                String payload = new String(message.getPayload());
-                System.out.println("기기 등록 요청 수신: " + payload);
+            MqttClient client = mqttService.getClient();
+            if (client.isConnected()) {
+                /*토픽에 메시지가 publish 될 때마다 수신*/
+                client.subscribe(topic, 1,(t, message) -> {
+                    String payload = new String(message.getPayload());
+                    System.out.println("기기 등록 요청 수신: " + payload);
 
-                //JSON 파싱
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode jsonNode = objectMapper.readTree(payload);
-                String name = jsonNode.get("name").asText();
-                String type = jsonNode.get("type").asText();
-                String clientId = jsonNode.get("clientId").asText();
-                //DB에 저장
-                saveDeviceToDB(name, type, clientId);
-
-                /*기기 등록을 1회만 한다면 주석 제거
-                mqttClient.unsubscribe(topic);*/
-            });
+                    //JSON 파싱
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode jsonNode = objectMapper.readTree(payload);
+                    String name = jsonNode.get("name").asText();
+                    String type = jsonNode.get("type").asText();
+                    String clientId = jsonNode.get("clientId").asText();
+                    //DB에 저장
+                    saveDeviceToDB(name, type, clientId);
+                });
+            } else {
+                System.err.println("MQTT 브로커에 연결되지 않음. 구독 실패");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,7 +65,7 @@ public class MqttSubscriberService implements MqttCallback {
     private void saveDeviceToDB(String name, String type, String clientId) {
         User user = userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
         switch (type.toLowerCase()) {
-            case "button" -> {
+            case "button_clicker" -> {
                 if (buttonRepository.existsByClientId(clientId)) {
                     System.out.println("이미 등록된 기기입니다.");
                     return;
@@ -75,7 +76,7 @@ public class MqttSubscriberService implements MqttCallback {
                 button.setClientId(clientId);
                 buttonRepository.save(button);
             }
-            case "dial" -> {
+            case "dial_actuator" -> {
                 if (dialRepository.existsByClientId(clientId)) {
                     System.out.println("이미 등록된 기기입니다.");
                     return;
@@ -87,7 +88,7 @@ public class MqttSubscriberService implements MqttCallback {
                 dial.setClientId(clientId);
                 dialRepository.save(dial);
             }
-            case "door" -> {
+            case "door_sensor" -> {
                 if (doorRepository.existsByClientId(clientId)) {
                     System.out.println("이미 등록된 기기입니다.");
                     return;
@@ -102,39 +103,18 @@ public class MqttSubscriberService implements MqttCallback {
         }
     }
 
-   /* //애플리케이션이 실행되면 자동으로 실행되어 {topicFilter}를 구독
-    @PostConstruct
-    public void subscribeToTopic() {
-        try {
-            mqttClient.setCallback(this);
-            mqttClient.subscribe("iot/sensor");
-            System.out.println("Subscribed to topic: iot/sensor");
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-    } */
-
-    //Mqtt 연결이 끊어졌을 시 로그 출력
-    //TODO: 자동 재연결 로직을 추가
     @Override
-    public void connectionLost(Throwable cause) {
-        System.out.println("Connection lost: " + cause.getMessage());
-    }
+    public void connectionLost(Throwable throwable) {
 
-    //Mqtt 메시지를 받을 때 호출되어 메시지를 문자열로 변환
-    //메시지 큐에 수신 받은 메시지 삽입
-    @Override
-    public void messageArrived(String topic, MqttMessage message) throws Exception {
-        String receivedMessage = new String(message.getPayload());
-        System.out.println("Received message: " + receivedMessage);
-        messageQueue.offer(receivedMessage);
     }
 
     @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {}
+    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
 
-    //메시지 큐에서 마지막 메시지 poll
-    public String getLastMessage() {
-        return messageQueue.poll();
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+
     }
 }
