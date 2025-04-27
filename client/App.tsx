@@ -1,14 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View,StyleSheet} from "react-native";
-import DevicePage from "./src/screens/DevicePage"; 
-import AnotherPage  from "./src/screens/DevicePage/AnotherPage";
+import { View, StyleSheet } from "react-native";
+import DevicePage from "./src/screens/DevicePage";
+import AnotherPage from "./src/screens/DevicePage/AnotherPage";
+import Loading from "./src/screens/LoadingPage";
 
 const Tab = createBottomTabNavigator();
 
 const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) return <Loading />;
+
   return (
     <NavigationContainer>
       <Tab.Navigator
