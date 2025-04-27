@@ -1,31 +1,50 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 const DeviceBox = () => {
   const [expanded, setExpanded] = useState(false);
+  const [isOn, setIsOn] = useState(false);
 
   return (
     <View style={styles.wrapper}>
       <View style={[styles.innerBox, expanded && styles.innerBoxExpanded]}>
+        {/* 토글*/}
+        <TouchableOpacity
+          style={styles.chevronBtn}
+          onPress={() => setExpanded(e => !e)}
+        >
+          <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
+        </TouchableOpacity>
         <View style={styles.headerRow}>
-        <View style={{ flex: 1 }}>
-          <Text>전기장판</Text>
-          <Text>메모를 입력하세요.</Text>
-        </View>
-          <View style={styles.rightIcons}>
-            <TouchableOpacity
-              style={{ marginLeft: 'auto'}} 
-              onPress={() => setExpanded(e => !e)}
-            >
-              <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
-            </TouchableOpacity>
+          {/* 디바이스 아이콘 */}
+          <Image
+            source={require('../../../../assets/device_icon.png')}
+            style={styles.deviceIcon}
+            resizeMode="contain"
+          />
+          {/* 가운데 텍스트 */}
+          <View style={styles.textArea}>
+            <Text style={styles.deviceTitle}>전기장판</Text>
           </View>
+          {/* 전원 버튼 */}
+          <TouchableOpacity onPress={() => setIsOn(prev => !prev)} activeOpacity={0.8}>
+            <Image
+              source={
+                isOn
+                  ? require('../../../../assets/power_on.png')
+                  : require('../../../../assets/power_off.png')
+              }
+              style={styles.powerBtn}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
       </View>
       {expanded && (
         <View style={styles.expandedBox}>
+          {/* 확장 영역 내용 */}
         </View>
       )}
     </View>
@@ -49,29 +68,50 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     overflow: "hidden",
     zIndex: 2,
-  },
-  innerBoxExpanded: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 10,
-  },
-  rightIcons: {
-    flexDirection: "row",
-    alignItems: "center",
+    position: "relative",
   },
   chevronBtn: {
+    position: "absolute",
+    top: 2,
+    right: 5,
+    zIndex: 10,
     padding: 6,
   },
   chevron: {
     fontSize: 22,
     fontWeight: "bold",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    height: "100%",
+  },
+  deviceIcon: {
+    width: 80,
+    height: 80,
+    marginLeft: 10,
+  },
+  textArea: {
+    flex: 1,
+    justifyContent: "center",
+    marginLeft: 15,
+  },
+  deviceTitle: {
+    fontWeight: "800",
+    fontSize: 20,
+    color: "#000",
+    marginBottom: 30,
+  },
+  powerBtn: {
+    width: 70,
+    height: 70,
+    marginLeft: 10,
+  },
+  innerBoxExpanded: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   expandedBox: {
     width: width * 0.85,
