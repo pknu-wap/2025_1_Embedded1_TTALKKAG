@@ -78,8 +78,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   chevron: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 15,
   },
   headerRow: {
     flexDirection: "row",

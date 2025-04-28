@@ -11,21 +11,21 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   text1: {
-    fontWeight: "800",
-    fontSize: 24,
-    marginTop: 55, 
+    fontWeight: "900",
+    fontSize: 18,
+    marginTop: 30, 
     marginLeft: 40,
   },
   text2: {
     fontSize: 20,
-    fontWeight: "300",
+    fontWeight: "400",
     marginTop: 30,
     marginLeft: 40,
   },
   text3: {
     fontSize: 40,
     fontWeight: "700",
-    marginTop: 10,
+    marginTop: 0,
     marginLeft: 40,
   },
   text4: {
