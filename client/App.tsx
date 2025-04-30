@@ -6,18 +6,32 @@ import { View, StyleSheet, Image } from "react-native";
 import DevicePage from "./src/screens/DevicePage";
 import AnotherPage from "./src/screens/DevicePage/AnotherPage";
 import Loading from "./src/screens/LoadingPage";
+import { registerDevice } from './src/api/deviceApi';
 
 const Tab = createBottomTabNavigator();
 
 const App = () => {
   const [loading, setLoading] = useState(true);
 
+  // 앱 로드 시 registerDevice 호출
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    const initializeApp = async () => {
+      try {
+        // 기기 등록 요청
+        const response = await registerDevice();
+        // 기기 등록이 끝나면 로딩 화면을 종료하고, 메인 화면으로 넘어감
+        console.log("기기 등록 성공:", response.data);
 
-  if (loading) return <Loading />;
+        setLoading(false);
+      } catch (error) {
+        console.error("기기 등록 실패:", error);
+        setLoading(false);  // 실패하더라도 로딩을 종료
+      }
+    };
+    initializeApp();
+  }, []); 
+
+  if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
 
   return (
     <NavigationContainer>
@@ -87,7 +101,7 @@ const styles = StyleSheet.create({
   tabBarLabelStyle: {
     fontSize: 15,
     fontWeight: "bold",
-    marginTop: 23, // 아이콘과 라벨 간격 조정
+    marginTop: 23, 
   },
 });
 

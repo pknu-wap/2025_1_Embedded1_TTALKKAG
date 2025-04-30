@@ -1,56 +1,83 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions
+} from "react-native";
+import { pressDevice } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
-const DeviceBox = () => {
-  const [expanded, setExpanded] = useState(false);
-  const [isOn, setIsOn] = useState(false);
+// DeviceBox 컴포넌트 정의
+const DeviceBox = ({ id, name, type }) => {
+  const [expanded, setExpanded] = useState(false);  // 다이얼 디바이스의 확장 상태
+  const [loading, setLoading] = useState(false);    // API 요청 중 로딩 여부
+  const [pressed, setPressed] = useState(false);    // 디바이스 상태 (전원 ON/OFF)
+
+  // 전원 버튼 누를 때 실행되는 함수
+  const handlePress = async () => {
+    setPressed(prev => !prev);       // 먼저 UI를 반응시킴
+    setLoading(true);                // 버튼 비활성화를 위한 로딩 표시
+    try {
+      const res = await pressDevice(id);  // 서버에 버튼 누르기 요청
+      console.log("pressDevice 응답:", res?.data, res?.status);
+    } catch (err) {
+      console.error("제어 실패:", err);
+      setPressed(prev => !prev);     // 실패 시 이전 상태로 되돌리기
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isDial = type === "dial";  // 다이얼 타입 디바이스 여부 확인
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.innerBox, expanded && styles.innerBoxExpanded]}>
-        {/* 토글*/}
-        <TouchableOpacity
-          style={styles.chevronBtn}
-          onPress={() => setExpanded(e => !e)}
-        >
-          <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
-        </TouchableOpacity>
+      <View style={[styles.innerBox, expanded && isDial && styles.innerBoxExpanded]}>
+        {/* 확장 버튼 (다이얼일 때만 표시됨) */}
+        {isDial && (
+          <TouchableOpacity style={styles.chevronBtn} onPress={() => setExpanded(e => !e)}>
+            <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.headerRow}>
-          {/* 디바이스 아이콘 */}
+        {/* 디바이스 아이콘 */}
           <Image
             source={require('../../../../assets/device_icon.png')}
             style={styles.deviceIcon}
             resizeMode="contain"
           />
-          {/* 가운데 텍스트 */}
+        {/* 디바이스 이름*/}
           <View style={styles.textArea}>
-            <Text style={styles.deviceTitle}>전기장판</Text>
+            <Text style={styles.deviceTitle}>{name}</Text>
           </View>
-          {/* 전원 버튼 */}
-          <TouchableOpacity onPress={() => setIsOn(prev => !prev)} activeOpacity={0.8}>
+        {/* 전원 버튼 disabled prop은 api요청도중에 중복터치가 안되게 로딩중에 잠금 */}
+          <TouchableOpacity onPress={handlePress} disabled={loading}>
             <Image
-              source={
-                isOn
-                  ? require('../../../../assets/power_on.png')
-                  : require('../../../../assets/power_off.png')
-              }
-              style={styles.powerBtn}
+              source={pressed
+                ? require('../../../../assets/power_on.png')
+                : require('../../../../assets/power_off.png')}
+              style={[styles.powerBtn]}
               resizeMode="contain"
             />
           </TouchableOpacity>
         </View>
       </View>
-      {expanded && (
+
+      {/* 확장 영역 (다이얼 디바이스일 때만 표시) */}
+      {isDial && expanded && (
         <View style={styles.expandedBox}>
-          {/* 확장 영역 내용 */}
         </View>
       )}
     </View>
   );
 };
 
+// 스타일 정의
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: "center",
@@ -60,15 +87,16 @@ const styles = StyleSheet.create({
     width: width * 0.85,
     height: height * 0.15,
     backgroundColor: "white",
-    borderTopLeftRadius: 31,
-    borderTopRightRadius: 31,
-    borderBottomLeftRadius: 31,
-    borderBottomRightRadius: 31,
+    borderRadius: 31,
     borderWidth: 1,
     borderColor: "#ddd",
     overflow: "hidden",
     zIndex: 2,
     position: "relative",
+  },
+  innerBoxExpanded: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   chevronBtn: {
     position: "absolute",
@@ -107,10 +135,6 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     marginLeft: 10,
-  },
-  innerBoxExpanded: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
   },
   expandedBox: {
     width: width * 0.85,
