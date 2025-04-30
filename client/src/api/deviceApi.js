@@ -34,3 +34,18 @@ export const pressDevice = async (deviceId) => {
     }
   });
 };
+
+// 4) 디바이스 이름 변경 (PATCH)
+export const changeDeviceName = async (deviceId, type, newName) => {
+  const url = `${BASE_URL}/device/change-name`;
+  return axios.patch(url, {
+    deviceId,
+    type,
+    newName
+  }, {
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  });
+};
