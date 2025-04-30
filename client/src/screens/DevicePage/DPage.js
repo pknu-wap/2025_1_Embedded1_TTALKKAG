@@ -18,7 +18,7 @@ const DPage = () => {
       // buttons와 dials를 하나의 배열로 합쳐 저장 (각 항목에 type 속성 추가)
       // DeviceBox에서 type에 따라 다른 UI를 구성할 수 있게 하기 위함
       setDeviceList([
-        ...response.data.buttons.map((b) => ({ ...b, type: "button" })),
+        ...response.data.buttons.map((b) => ({ ...b, type: "button_clicker" })),
         ...response.data.dials.map((d) => ({ ...d, type: "dial" }))
       ]);
     } catch (error) {
