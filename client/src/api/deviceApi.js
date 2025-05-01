@@ -60,3 +60,18 @@ export const deleteDevice = async (payload) => {
     data: payload
   });
 };
+// 5) 디바이스 메모 작성 (PATCH)
+
+export const saveDeviceMemo = async (deviceId, type, memo) => {
+  const url = `${BASE_URL}/device/memo`;
+  return axios.patch(url, {
+    type,
+    deviceId,
+    memo
+  }, {
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  });
+};
