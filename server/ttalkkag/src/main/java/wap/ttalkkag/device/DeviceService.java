@@ -10,6 +10,7 @@ import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
 import wap.ttalkkag.domain.Door;
 import wap.ttalkkag.domain.User;
+import wap.ttalkkag.mqtt.MqttPublisherSevice;
 import wap.ttalkkag.mqtt.MqttService;
 import wap.ttalkkag.repository.ButtonRepository;
 import wap.ttalkkag.repository.DialRepository;
@@ -24,6 +25,7 @@ public class DeviceService {
     private final DialRepository dialRepository;
     private final DoorRepository doorRepository;
     private final MqttService mqttService;
+    private final MqttPublisherSevice mqttPublisherSevice;
 
     /*해당 userId에 연관된 디바이스 목록을 가져옴*/
     public User getRegisteredDevices(Long userId) {
@@ -77,20 +79,32 @@ public class DeviceService {
             }
             default -> throw new IllegalArgumentException("Wrong device type");
         }
-        try {
-            /*브로커와 연결 후 생성된 Mqtt Client 인스턴스 가져오기*/
-            MqttClient client = mqttService.getClient();
-            /*인스턴스 없으면 새로 연결 진행 후 생성*/
-            if (client == null || !client.isConnected()) {
-                mqttService.connectToBroker();
-                client = mqttService.getClient();
+        String topic = "server/disconnect/" + type + "/" + clientId;
+        String payload = "";
+        /*연결 해제 메시지 발행*/
+        mqttPublisherSevice.publish(topic, payload);
+    }
+    /*기기 메모 작성*/
+    public void patchDevicememo(PatchDeviceMemoDTO request) {
+        Long deviceId = request.getDeviceId();
+        String type = request.getType();
+        String memo = request.getMemo();;
+        switch(type) {
+            case "button_clicker" -> {
+                Button button = buttonRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                button.setMemo(memo);
+                buttonRepository.save(button);
             }
-            /*연결 해제 메시지 발행 파라미터: 토픽, 페이로드, QoS, retain 여부*/
-            client.publish("server/disconnect/" + type + "/" + clientId, new byte[0], 1, false);
-        } catch (MqttException e) {
-            System.err.println("MQTT 연결/발행 실패: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("기타 예외: " + e.getMessage());
+            case "dial_actuator" -> {
+                Dial dial = dialRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                dial.setMemo(memo);
+                dialRepository.save(dial);
+            }
+            case "door_sensor" -> {
+                Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                door.setMemo(memo);
+                doorRepository.save(door);
+            }
         }
     }
 }

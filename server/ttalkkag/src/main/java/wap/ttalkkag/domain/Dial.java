@@ -23,6 +23,7 @@ public class Dial {
     private String name;
     private String clientId;
     private Integer step;
+    private String memo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

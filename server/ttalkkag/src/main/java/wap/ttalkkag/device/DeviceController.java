@@ -29,4 +29,9 @@ public class DeviceController {
         deviceService.deleteDevice(request);
         return ResponseEntity.ok().build();
     }
+    @PatchMapping("/memo")
+    public ResponseEntity<Void> patchDeviceMemo(@RequestBody PatchDeviceMemoDTO request) {
+        deviceService.patchDevicememo(request);
+        return ResponseEntity.ok().build();
+    }
 }
