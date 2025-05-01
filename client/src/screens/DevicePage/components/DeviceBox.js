@@ -50,8 +50,12 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
     if (tempName !== deviceName) {
       try {
         await changeDeviceName(id, type, tempName);
+        console.log("이름변경 성공")
+
         setDeviceName(tempName);
       } catch (err) {
+        console.log("이름 변경 실패:", err.message, err.response?.data);
+
         setTempName(deviceName);
       }
     }
@@ -147,10 +151,9 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
                 <TextInput
                   style={styles.nameInput}
                   value={tempName}
-                  onChangeText={setTempName}
+                  onChange={(e) => setTempName(e.nativeEvent.text)} 
                   autoFocus
                   onBlur={handleName}
-                  onSubmitEditing={handleName}
                   returnKeyType="done"
                 />
               ) : (
@@ -190,7 +193,7 @@ const styles = StyleSheet.create({
   },
   innerBox: {
     width: width * 0.85,
-    height: height * 0.15,
+    height: height * 0.18,
     backgroundColor: "white",
     borderRadius: 31,
     borderWidth: 1,
@@ -221,8 +224,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   deviceIcon: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     marginLeft: 10,
   },
   textArea: {
@@ -233,8 +236,9 @@ const styles = StyleSheet.create({
   deviceTitle: {
     fontWeight: "800",
     fontSize: 20,
-    color: "#000",
+    color: "#4999BA",
     marginBottom: 30,
+    
   },
   powerBtn: {
     width: 70,

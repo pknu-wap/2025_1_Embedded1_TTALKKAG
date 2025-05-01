@@ -48,9 +48,9 @@ const DPage = () => {
         contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
         showsVerticalScrollIndicator={false}
       >
-        <AppText style={appTextStyles.text1}>딸깍</AppText>
-        <AppText style={appTextStyles.text2}>쉽고 편한 기기관리</AppText>
-        <AppText style={appTextStyles.text3}>My Devices</AppText>
+        <AppText style={appTextStyles.text1}>TTALKKACK</AppText>
+        <AppText style={appTextStyles.text3}>Device</AppText>
+        <AppText style={appTextStyles.text2}>디바이스 페이지</AppText>
         <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
 
         {/* 기기 목록을 map으로 순회하여 DeviceBox 컴포넌트로 렌더링 */}
