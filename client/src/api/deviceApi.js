@@ -49,3 +49,14 @@ export const changeDeviceName = async (deviceId, type, newName) => {
     }
   });
 };
+// 5) 디바이스 삭제 (DELETE)
+
+export const deleteDevice = async (payload) => {
+  return await axios.delete(`${BASE_URL}/device/delete`, {
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    data: payload
+  });
+};

@@ -6,121 +6,185 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
-  TextInput
+  TextInput,
+  Animated,
+  Alert,
 } from "react-native";
-import { pressDevice } from '../../../api/deviceApi';
-import { changeDeviceName } from '../../../api/deviceApi';
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { pressDevice, changeDeviceName, deleteDevice } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
-// DeviceBox 컴포넌트 정의
-const DeviceBox = ({ id, name, type }) => {
-  const [expanded, setExpanded] = useState(false);  // 다이얼 디바이스의 확장 상태
-  const [loading, setLoading] = useState(false);    // API 요청 중 로딩 여부
-  const [pressed, setPressed] = useState(false);    // 디바이스 상태 (전원 ON/OFF)
+const DeviceBox = ({ id, name, type, onDelete }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   // 이름 수정 관련 상태
-  const [isEditing, setIsEditing] = useState(false);        // 이름을 수정 중인지 여부 (true면 TextInput 노출)
-  const [deviceName, setDeviceName] = useState(name);       // 현재 디바이스 이름 (화면에 보여질 이름)
-  const [tempName, setTempName] = useState(name);           // 임시 입력용 이름 (TextInput에 입력 중인 값)
+  const [isEditing, setIsEditing] = useState(false);
+  const [deviceName, setDeviceName] = useState(name);
+  const [tempName, setTempName] = useState(name);
 
-  // 전원 버튼 누를 때 실행되는 함수
+  // 오른쪽 borderRadius 
+  const [rightRadius, setRightRadius] = useState(31);
+
+  // 전원 버튼
   const handlePress = async () => {
-    setPressed(prev => !prev);       // 먼저 UI를 반응시킴
-    setLoading(true);                // 버튼 비활성화를 위한 로딩 표시
+    setPressed(prev => !prev);
+    setLoading(true);
     try {
-      const res = await pressDevice(id);  // 서버에 버튼 누르기 요청
-      console.log("pressDevice 응답:", res?.data);
+      await pressDevice(id);
     } catch (err) {
-      console.error("제어 실패:", err);
-      setPressed(prev => !prev);     // 실패 시 이전 상태로 되돌리기
+      setPressed(prev => !prev);
     } finally {
       setLoading(false);
     }
   };
-  // 이름 수정 완료 시 처리 함수 (포커스 해제 또는 엔터 입력 시 호출)
-   const handleName = async () => {
-    if (tempName.trim() === '') {
-      setTempName(deviceName);                
-      setIsEditing(false);                     
-      return;                                 
-    }
 
-    setIsEditing(false); // 입력 모드 종료
-    if (tempName !== deviceName) { // 이름이 실제로 변경되었을 경우만 API 호출
+  // 이름 수정
+  const handleName = async () => {
+    if (tempName.trim() === '') {
+      setTempName(deviceName);
+      setIsEditing(false);
+      return;
+    }
+    setIsEditing(false);
+    if (tempName !== deviceName) {
       try {
-        // 서버에 디바이스 이름 변경 요청
-        const res = await changeDeviceName(id, type, tempName);
-        // 성공 시 실제 이름 상태값 변경
+        await changeDeviceName(id, type, tempName);
         setDeviceName(tempName);
-        console.log("이름 변경 성공");
       } catch (err) {
-        console.error("이름 변경 실패");
-        setTempName(deviceName); // 실패 시 원래 이름 복원
+        setTempName(deviceName);
       }
     }
   };
-  const isDial = type === "dial";  // 다이얼 타입 디바이스 여부 확인
 
+  // 삭제
+  const handleDelete = async () => {
+    Alert.alert(
+      "기기 삭제",
+      "정말로 이 기기를 삭제하시겠습니까?",
+      [
+        {
+          text: "아니요",
+        },
+        {
+          text: "예",
+          onPress: async () => {
+            try {
+              await deleteDevice({ type, deviceId: id });
+              onDelete(id,type); 
+            } catch (err) {
+              Alert.alert("삭제 실패", "기기를 제거하는 중 오류가 발생했습니다.");
+              console.log("에러메시지", err.message)
+            }
+          }
+        }
+      ],
+    );
+  };
+  
+  // 삭제 버튼
+  const renderRightActions = (progress, dragX) => {
+    const trans = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [0, 100],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <Animated.View style={{ transform: [{ translateX: trans }] }}>
+        <TouchableOpacity style={deleteButtonStyle} onPress={handleDelete}>
+          <Text style={styles.deleteText}>삭제</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  const isDial = type === "dial_actuator";
+  const isExpanded = isDial && expanded;
+
+  // 삭제 버튼 스타일 동적 적용
+  const deleteButtonStyle = [
+    styles.deleteButton,
+    {
+      borderTopRightRadius: 31,
+      borderBottomRightRadius: isExpanded ? 0 : 31, // 확장 시 0, 아니면 31
+    }
+  ];
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.innerBox, expanded && isDial && styles.innerBoxExpanded]}>
-        {/* 확장 버튼 (다이얼일 때만 표시됨) */}
-        {isDial && (
-          <TouchableOpacity style={styles.chevronBtn} onPress={() => setExpanded(e => !e)}>
-            <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
-          </TouchableOpacity>
-        )}
+      <Swipeable
+        renderRightActions={renderRightActions}
+        overshootRight={false}
+        friction={2}
+        //  슬라이드 열릴 때 borderRadius 0, 닫힐 때 31로 복원
+        onSwipeableOpen={() => setRightRadius(0)}
+        onSwipeableClose={() => setRightRadius(31)}
+      >
+        <View style={[
+          styles.innerBox,
+          expanded && isDial && styles.innerBoxExpanded,
+          // 오른쪽 borderRadius를 동적으로 적용
+          {
+            borderTopRightRadius: rightRadius,
+            borderBottomRightRadius: expanded ? 0 : rightRadius,
+          }
+        ]}>
+          {isDial && (
+            <TouchableOpacity style={styles.chevronBtn} onPress={() => setExpanded(e => !e)}>
+              <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
+            </TouchableOpacity>
+          )}
 
-        <View style={styles.headerRow}>
-        {/* 디바이스 아이콘 */}
-          <Image
-            source={require('../../../../assets/device_icon.png')}
-            style={styles.deviceIcon}
-            resizeMode="contain"
-          />
-        {/* 디바이스 이름*/}
-        <View style={styles.textArea}>
-            {isEditing ? (
-              // 수정할 때는 TextInput을 보여줌
-              <TextInput
-                style={styles.nameInput}
-                value={tempName} // 현재 입력 중인 이름 (임시 상태)
-                onChangeText={setTempName} // 입력값 변경 시 상태 업데이트
-                autoFocus   // 자동으로 포커스
-                onBlur={handleName}  // 포커스 해제되면 이름 저장 시도
-                onSubmitEditing={handleName} // 키보드에서 '완료' 누르면 저장
-                returnKeyType="done" // 키보드에 '완료' 버튼 표시
-              />
-            ) : (
-              <TouchableOpacity onPress={() => setIsEditing(true)}>
-                <Text style={styles.deviceTitle}>{deviceName}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        {/* 전원 버튼 disabled prop은 api요청도중에 중복터치가 안되게 로딩중에 잠금 */}
-          <TouchableOpacity onPress={handlePress} disabled={loading}>
+          <View style={styles.headerRow}>
             <Image
-              source={pressed
-                ? require('../../../../assets/power_on.png')
-                : require('../../../../assets/power_off.png')}
-              style={[styles.powerBtn]}
+              source={require('../../../../assets/device_icon.png')}
+              style={styles.deviceIcon}
               resizeMode="contain"
             />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* 확장 영역 (다이얼 디바이스일 때만 표시) */}
+            <View style={styles.textArea}>
+              {isEditing ? (
+                <TextInput
+                  style={styles.nameInput}
+                  value={tempName}
+                  onChangeText={setTempName}
+                  autoFocus
+                  onBlur={handleName}
+                  onSubmitEditing={handleName}
+                  returnKeyType="done"
+                />
+              ) : (
+                <TouchableOpacity onPress={() => setIsEditing(true)}>
+                  <Text style={styles.deviceTitle}>{deviceName}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity onPress={handlePress} disabled={loading}>
+              <Image
+                source={
+                  pressed
+                    ? require('../../../../assets/power_on.png')
+                    : require('../../../../assets/power_off.png')
+                }
+                style={styles.powerBtn}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Swipeable>
       {isDial && expanded && (
-        <View style={styles.expandedBox}>
+        <View style={[styles.expandedBox]}>
+          {/* 확장 시 보여질 내용 */}
         </View>
       )}
     </View>
   );
 };
 
-// 스타일 정의
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: "center",
@@ -187,6 +251,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderColor: "#ddd",
+    borderTopRightRadius: 0,
     borderBottomLeftRadius: 31,
     borderBottomRightRadius: 31,
     zIndex: 1,
@@ -198,6 +263,20 @@ const styles = StyleSheet.create({
     color: "#000",
     borderBottomWidth: 1,
     borderColor: "#aaa",
+  },
+  deleteButton: {
+    backgroundColor: '#ff4d4d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+    height: height * 0.15,
+    borderTopRightRadius: 31,
+    borderBottomRightRadius: 31,
+  },
+  deleteText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });
 

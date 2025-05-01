@@ -7,7 +7,7 @@ import DevicePage from "./src/screens/DevicePage";
 import AnotherPage from "./src/screens/DevicePage/AnotherPage";
 import Loading from "./src/screens/LoadingPage";
 import { registerDevice } from './src/api/deviceApi';
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 const Tab = createBottomTabNavigator();
 
 const App = () => {
@@ -34,59 +34,61 @@ const App = () => {
   if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
 
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        initialRouteName="디바이스 목록 페이지"
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: styles.tabBarStyle,
-          tabBarLabelStyle: styles.tabBarLabelStyle,
-          tabBarActiveTintColor: "#fff",
-          tabBarInactiveTintColor: "#888",
-        }}
-      >
-        <Tab.Screen
-          name="디바이스 목록 페이지"
-          component={DevicePage}
-          options={{
-            tabBarLabel: "Device Page",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Image
-                source={require("./assets/DeviceNav.png")}
-                style={{
-                  width: 32,
-                  height: 32,
-                  tintColor: focused ? "#fff" : "#888",
-                  marginBottom: 5,
-                  marginTop: 45
-                }}
-                resizeMode="contain"
-              />
-            ),
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Tab.Navigator
+          initialRouteName="디바이스 목록 페이지"
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: styles.tabBarStyle,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
+            tabBarActiveTintColor: "#fff",
+            tabBarInactiveTintColor: "#888",
           }}
-        />
-        <Tab.Screen
-          name="트리거 목록 페이지"
-          component={AnotherPage}
-          options={{
-            tabBarLabel: "Trigger Page",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Image
-                source={require("./assets/TriggerNav.png")}
-                style={{
-                  width: 32,
-                  height: 32,
-                  tintColor: focused ? "#fff" : "#888",
-                  marginBottom: 5,
-                  marginTop: 45
-                }}
-                resizeMode="contain"
-              />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+        >
+          <Tab.Screen
+            name="디바이스 목록 페이지"
+            component={DevicePage}
+            options={{
+              tabBarLabel: "Device Page",
+              tabBarIcon: ({ focused}) => (
+                <Image
+                  source={require("./assets/DeviceNav.png")}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    tintColor: focused ? "#fff" : "#888",
+                    marginBottom: 5,
+                    marginTop: 45
+                  }}
+                  resizeMode="contain"
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="트리거 목록 페이지"
+            component={AnotherPage}
+            options={{
+              tabBarLabel: "Trigger Page",
+              tabBarIcon: ({ focused, color, size }) => (
+                <Image
+                  source={require("./assets/TriggerNav.png")}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    tintColor: focused ? "#fff" : "#888",
+                    marginBottom: 5,
+                    marginTop: 45
+                  }}
+                  resizeMode="contain"
+                />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 };
 
