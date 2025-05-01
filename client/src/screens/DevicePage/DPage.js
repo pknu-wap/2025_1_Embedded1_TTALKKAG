@@ -6,6 +6,8 @@ import { AppText, styles as appTextStyles } from "./components/AppText.js";
 import DeviceBox from "./components/DeviceBox.js";
 import { fetchDeviceList } from "../../api/deviceApi"; 
 
+
+
 const DPage = () => {
   const tabBarHeight = useBottomTabBarHeight(); // 하단 탭바 높이를 가져와서 ScrollView 패딩에 반영
   const [deviceList, setDeviceList] = useState([]); // 기기 목록을 저장할 state
@@ -19,13 +21,21 @@ const DPage = () => {
       // DeviceBox에서 type에 따라 다른 UI를 구성할 수 있게 하기 위함
       setDeviceList([
         ...response.data.buttons.map((b) => ({ ...b, type: "button_clicker" })),
-        ...response.data.dials.map((d) => ({ ...d, type: "dial" }))
+        ...response.data.dials.map((d) => ({ ...d, type: "dial_actuator" }))
       ]);
     } catch (error) {
         console.log(error.message);
       }
   };
 
+  // 삭제된 기기를 화면에서 제거하는 함수
+  const handleDeviceDelete = (id, type) => {
+    // 1. 목록에서 즉시 제거
+    setDeviceList((prevList) => prevList.filter((device) => !(device.id === id && device.type === type)));
+    // 2. 서버와 동기화 위해 목록 새로고침 
+    loadDevices();
+  };
+  
   useEffect(() => {
     loadDevices();
   }, []);
@@ -46,10 +56,11 @@ const DPage = () => {
         {/* 기기 목록을 map으로 순회하여 DeviceBox 컴포넌트로 렌더링 */}
         {deviceList.map((device) => (
           <DeviceBox
-            key={device.id}
+            key={`${device.type}-${device.id}`} // key 가 고유하게 타입-1,2,3
             id={device.id}
             name={device.name}
             type={device.type} // button 또는 dial
+            onDelete={handleDeviceDelete} 
           />
         ))}
       </ScrollView>
