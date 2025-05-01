@@ -17,7 +17,6 @@ const { width, height } = Dimensions.get("window");
 
 const DeviceBox = ({ id, name, type, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [pressed, setPressed] = useState(false);
 
   // 이름 수정 관련 상태
@@ -29,15 +28,14 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
   const [rightRadius, setRightRadius] = useState(31);
 
   // 전원 버튼
-  const handlePress = async () => {
-    setPressed(prev => !prev);
-    setLoading(true);
+  const handlePress = async () => {   
     try {
       await pressDevice(id);
+      setPressed(prev => !prev); 
+      console.log("제어 성공")
     } catch (err) {
-      setPressed(prev => !prev);
-    } finally {
-      setLoading(false);
+      setPressed(prev => !prev); // 실패 시 UI 복구
+      Alert.alert("제어 실패");
     }
   };
 
@@ -162,7 +160,7 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
               )}
             </View>
 
-            <TouchableOpacity onPress={handlePress} disabled={loading}>
+            <TouchableOpacity onPress={handlePress}>
               <Image
                 source={
                   pressed
