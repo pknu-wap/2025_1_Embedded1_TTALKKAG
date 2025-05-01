@@ -22,6 +22,7 @@ public class Button {
 
     private String name;
     private String clientId;
+    private String memo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
