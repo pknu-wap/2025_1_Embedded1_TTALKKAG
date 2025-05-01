@@ -12,27 +12,29 @@ const styles = StyleSheet.create({
   },
   text1: {
     fontWeight: "900",
-    fontSize: 18,
+    fontSize: 16,
     marginTop: 30, 
     marginLeft: 40,
   },
   text2: {
-    fontSize: 20,
-    fontWeight: "400",
-    marginTop: 30,
+    fontSize: 16,
+    fontWeight: "500",
+    marginTop: 0,
     marginLeft: 40,
   },
   text3: {
     fontSize: 40,
     fontWeight: "700",
-    marginTop: 0,
+    marginTop: 30,
     marginLeft: 40,
   },
   text4: {
-    fontSize: 20,
-    fontWeight: "800",
-    marginTop: 40,
+    fontSize: 17,
+    fontWeight: "700",
+    marginTop: 50,
+    marginBottom: -10,
     marginLeft: 40,
+    color: "#4999BA"
   },
 });
 

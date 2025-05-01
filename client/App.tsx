@@ -50,7 +50,7 @@ const App = () => {
             name="디바이스 목록 페이지"
             component={DevicePage}
             options={{
-              tabBarLabel: "Device Page",
+              tabBarLabel: "Device",
               tabBarIcon: ({ focused}) => (
                 <Image
                   source={require("./assets/DeviceNav.png")}
@@ -58,8 +58,7 @@ const App = () => {
                     width: 32,
                     height: 32,
                     tintColor: focused ? "#fff" : "#888",
-                    marginBottom: 5,
-                    marginTop: 45
+                    marginTop: 15
                   }}
                   resizeMode="contain"
                 />
@@ -70,16 +69,15 @@ const App = () => {
             name="트리거 목록 페이지"
             component={AnotherPage}
             options={{
-              tabBarLabel: "Trigger Page",
+              tabBarLabel: "Trigger",
               tabBarIcon: ({ focused, color, size }) => (
                 <Image
                   source={require("./assets/TriggerNav.png")}
                   style={{
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     tintColor: focused ? "#fff" : "#888",
-                    marginBottom: 5,
-                    marginTop: 45
+                    marginTop: 15
                   }}
                   resizeMode="contain"
                 />
@@ -94,17 +92,16 @@ const App = () => {
 
 const styles = StyleSheet.create({
   tabBarStyle: {
-    height: 90,
+    height: 60,
     backgroundColor: "#000",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
     position: "absolute",
   },
   tabBarLabelStyle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "bold",
-    marginTop: 23, 
+    marginTop: 8
   },
+  
 });
 
 export default App;
