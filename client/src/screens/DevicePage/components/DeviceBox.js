@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,11 @@ import {
   Alert,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { pressDevice, changeDeviceName, deleteDevice } from '../../../api/deviceApi';
+import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
-const DeviceBox = ({ id, name, type, onDelete }) => {
+const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [expanded, setExpanded] = useState(false);
   const [pressed, setPressed] = useState(false);
 
@@ -23,18 +23,23 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [deviceName, setDeviceName] = useState(name);
   const [tempName, setTempName] = useState(name);
-
+  
   // 오른쪽 borderRadius 
   const [rightRadius, setRightRadius] = useState(31);
 
+  const [memoValue, setMemoValue] = useState(memo || '');
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+
   // 전원 버튼
-  const handlePress = async () => {   
+  const handlePress = async () => {
+    const start = Date.now();
     try {
       await pressDevice(id);
+      const end = Date.now();
+      console.log(`제어 응답 시간: ${end - start}ms`);
       setPressed(prev => !prev); 
-      console.log("제어 성공")
     } catch (err) {
-      setPressed(prev => !prev); // 실패 시 UI 복구
+      setPressed(prev => !prev);
       Alert.alert("제어 실패");
     }
   };
@@ -102,7 +107,18 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
       </Animated.View>
     );
   };
-
+  // 메모 저장 api
+  const handleMemoSave = async () => {
+    setIsEditingMemo(false);
+    try {
+      await saveDeviceMemo(id, type, memoValue);
+      console.log("메모 저장 성공");
+      onUpdateMemo?.(id,type, memoValue); // 부모에게 변경 알림
+    } catch (err) {
+      console.error("메모 저장 실패:", err.message, err.response?.data);
+    }
+  };
+  
   const isDial = type === "dial_actuator";
   const isExpanded = isDial && expanded;
 
@@ -151,17 +167,62 @@ const DeviceBox = ({ id, name, type, onDelete }) => {
                 <TextInput
                   style={styles.nameInput}
                   value={tempName}
-                  onChange={(e) => setTempName(e.nativeEvent.text)} 
-                  autoFocus
+                  onChangeText={setTempName}
                   onBlur={handleName}
                   returnKeyType="done"
+                  borderBottomWidth={0}
+                  maxLength={15}
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditing(true)}>
-                  <Text style={styles.deviceTitle}>{deviceName}</Text>
+                  <Text style={styles.deviceTitle} numberOfLines={1} ellipsizeMode="tail">{deviceName}</Text>
                 </TouchableOpacity>
               )}
-            </View>
+                 {/* 메모 입력/표시 영역 */}
+                  <View style={styles.memoRow}>
+                    {isEditingMemo ? (
+                      <>
+                        <TextInput
+                          style={styles.memoInput}
+                          value={memoValue}
+                          onChangeText={setMemoValue}
+                          placeholder="메모를 입력하세요."
+                          maxLength={20}
+                          underlineColorAndroid="transparent"
+                          returnKeyType="done"
+                          onBlur={handleMemoSave}
+                          onSubmitEditing={handleMemoSave}
+                          autoFocus
+                        />
+                        <Image
+                          source={require("../../../../assets/pencil_icon.png")}
+                          style={styles.memoIcon}
+                        />
+                      </>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.memoDisplay}
+                        onPress={() => setIsEditingMemo(true)}
+
+                      >
+                        <Text
+                          style={[
+                            styles.memoText,
+                            memo ? styles.memoTextFilled : styles.memoTextPlaceholder,
+                          ]}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {memo ? memo : "메모를 입력하세요."}
+                        </Text>
+                        <Image
+                          source={require("../../../../assets/pencil_icon.png")}
+                          style={styles.memoIcon}
+                        />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
 
             <TouchableOpacity onPress={handlePress}>
               <Image
@@ -235,9 +296,9 @@ const styles = StyleSheet.create({
   },
   deviceTitle: {
     fontWeight: "800",
-    fontSize: 20,
+    fontSize: 19,
     color: "#4999BA",
-    marginBottom: 30,
+    marginTop: 10,
     
   },
   powerBtn: {
@@ -260,11 +321,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   nameInput: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "800",
-    color: "#000",
-    borderBottomWidth: 1,
-    borderColor: "#aaa",
+    borderBottomWidth: 0,
+    padding: 0,
+    margin: 0,
   },
   deleteButton: {
     backgroundColor: '#ff4d4d',
@@ -280,6 +341,44 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
   },
+  memoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  memoDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  memoText: {
+    fontSize: 13,
+    fontWeight: 800,
+    marginRight: 4,
+    flexShrink: 1,
+  },
+  memoTextPlaceholder: {
+    color: "#b0b0b0",
+  },
+  memoTextFilled: {
+   
+  },
+  memoIcon: {
+    width: 14,
+    height: 14,
+    tintColor: "#b0b0b0",
+  },
+  memoInput: {
+    fontSize: 13,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    padding: 0,
+    margin: 0,
+    flex: 1,
+    alignSelf: "flex-start",
+  
+  },
+  
 });
 
 export default DeviceBox;

@@ -27,7 +27,7 @@ const DPage = () => {
         console.log(error.message);
       }
   };
-
+  
   // 삭제된 기기를 화면에서 제거하는 함수
   const handleDeviceDelete = (id, type) => {
     // 1. 목록에서 즉시 제거
@@ -36,9 +36,21 @@ const DPage = () => {
     loadDevices();
   };
   
+  const handleDeviceMemoUpdate = (id, type, newMemo) => {
+    setDeviceList((prevList) =>
+      prevList.map((device) =>
+        device.id === id && device.type === type
+          ? { ...device, memo: newMemo }
+          : device
+      )
+    );
+  };
+  
   useEffect(() => {
     loadDevices();
   }, []);
+
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -60,7 +72,9 @@ const DPage = () => {
             id={device.id}
             name={device.name}
             type={device.type} // button 또는 dial
+            memo={device.memo}
             onDelete={handleDeviceDelete} 
+            onUpdateMemo={handleDeviceMemoUpdate} 
           />
         ))}
       </ScrollView>
