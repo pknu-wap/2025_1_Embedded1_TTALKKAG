@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 export default function AnotherPage() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Trigger Page</Text>
+      <Text>Trigger Page11</Text>
     </View>
   );
 }
