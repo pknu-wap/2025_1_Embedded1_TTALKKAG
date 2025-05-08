@@ -17,7 +17,7 @@ const { width, height } = Dimensions.get("window");
 
 const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [expanded, setExpanded] = useState(false);
-  const [pressed, setPressed] = useState(false);
+
 
   // 이름 수정 관련 상태
   const [isEditing, setIsEditing] = useState(false);
@@ -32,14 +32,10 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
 
   // 전원 버튼
   const handlePress = async () => {
-    const start = Date.now();
     try {
       await pressDevice(id);
-      const end = Date.now();
-      console.log(`제어 응답 시간: ${end - start}ms`);
-      setPressed(prev => !prev); 
+      console.log("전원버튼 요청 성공")
     } catch (err) {
-      setPressed(prev => !prev);
       Alert.alert("제어 실패");
     }
   };
@@ -226,11 +222,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
 
             <TouchableOpacity onPress={handlePress}>
               <Image
-                source={
-                  pressed
-                    ? require('../../../../assets/power_on.png')
-                    : require('../../../../assets/power_off.png')
-                }
+                source={require('../../../../assets/power_on.png')}
                 style={styles.powerBtn}
                 resizeMode="contain"
               />
