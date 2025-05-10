@@ -30,6 +30,4 @@ public class Dial {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy = "dial")
-    private List<Trigger> triggers;
 }
