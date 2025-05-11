@@ -9,6 +9,7 @@ import {
   TextInput,
   Animated,
   Alert,
+  ImageBackground
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo } from '../../../api/deviceApi';
@@ -17,7 +18,8 @@ const { width, height } = Dimensions.get("window");
 
 const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [expanded, setExpanded] = useState(false);
-  const [pressed, setPressed] = useState(false);
+
+  const [isEditingDial, setIsEditingDial] = useState(false);
 
   // 이름 수정 관련 상태
   const [isEditing, setIsEditing] = useState(false);
@@ -30,16 +32,16 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [memoValue, setMemoValue] = useState(memo || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
 
+  const [dialValue, setDialValue] = useState(4); // 초기값 4, 1~7 사이
+  const DIAL_MIN = 1;
+  const DIAL_MAX = 7;
+
   // 전원 버튼
   const handlePress = async () => {
-    const start = Date.now();
     try {
       await pressDevice(id);
-      const end = Date.now();
-      console.log(`제어 응답 시간: ${end - start}ms`);
-      setPressed(prev => !prev); 
+      console.log("전원버튼 요청 성공")
     } catch (err) {
-      setPressed(prev => !prev);
       Alert.alert("제어 실패");
     }
   };
@@ -226,11 +228,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
 
             <TouchableOpacity onPress={handlePress}>
               <Image
-                source={
-                  pressed
-                    ? require('../../../../assets/power_on.png')
-                    : require('../../../../assets/power_off.png')
-                }
+                source={require('../../../../assets/power_on.png')}
                 style={styles.powerBtn}
                 resizeMode="contain"
               />
@@ -239,10 +237,78 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
         </View>
       </Swipeable>
       {isDial && expanded && (
-        <View style={[styles.expandedBox]}>
-          {/* 확장 시 보여질 내용 */}
-        </View>
+  <View style={styles.expandedBox}>
+    <View style={styles.dialRow}>
+    <View style={styles.dialValueBox}>
+  <ImageBackground
+    source={require('../../../../assets/dial_bg.png')}
+    style={{ width: 250, height: 95, justifyContent: "center", borderRadius: 12, marginLeft:30 }}
+    imageStyle={{ borderRadius: 10 }}
+  >
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+      {isEditingDial ? (
+        <TextInput
+          style={{
+            fontSize: 36,
+            fontWeight: "bold",
+            color: "#222",
+          }}
+          value={String(dialValue)}
+          keyboardType="number-pad"
+          maxLength={1}
+          onChangeText={text => {
+            // 숫자만 남기고, 빈 문자열 허용
+            const onlyNum = text.replace(/[^0-9]/g, "");
+            if (onlyNum === "") {
+              setDialValue(""); // 비울 수 있게
+            } else {
+              const num = Number(onlyNum);
+              if (num >= DIAL_MIN && num <= DIAL_MAX) {
+                setDialValue(num);
+              }
+            }
+          }}
+          
+          onBlur={() => setIsEditingDial(false)}
+          autoFocus
+        />
+      ) : (
+        <>
+          <TouchableOpacity onPress={() => setIsEditingDial(true)}>
+            <Text style={styles.dialValueText}>{dialValue}</Text>
+          </TouchableOpacity>
+          <Text style={styles.dialValueText}> / {DIAL_MAX}</Text>
+        </>
       )}
+    </View>
+  </ImageBackground>
+</View>
+      <View style={styles.dialButtonCol}>
+        <TouchableOpacity
+          style={[styles.dialBtn, dialValue === DIAL_MAX && styles.dialBtnDisabled]}
+          onPress={() => setDialValue(v => Math.min(DIAL_MAX, v + 1))}
+          disabled={dialValue === DIAL_MAX}
+        >
+          <Image 
+          source={require('../../../../assets/up.png')} 
+          style={{ width: 100, height: 45, marginTop: 100, marginBottom: 3}}
+          resizeMode="contain" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.dialBtn, dialValue === DIAL_MIN && styles.dialBtnDisabled]}
+          onPress={() => setDialValue(v => Math.max(DIAL_MIN, v - 1))}
+          disabled={dialValue === DIAL_MIN}
+        >
+          <Image 
+          source={require('../../../../assets/down.png')}
+          style={{ width: 100, height: 45, marginBottom: 45 }}
+          resizeMode="contain"/>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+)}
+
     </View>
   );
 };
@@ -331,8 +397,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff4d4d',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 100,
-    height: height * 0.15,
+    width: 110,
+    height: height * 0.18,
     borderTopRightRadius: 31,
     borderBottomRightRadius: 31,
   },
@@ -378,6 +444,32 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   
   },
+  dialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+  },
+  dialValueBox: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dialValueText: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#222",
+  },
+  dialButtonCol: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  dialBtnDisabled: {
+    opacity: 0.3,
+  },
+
   
 });
 

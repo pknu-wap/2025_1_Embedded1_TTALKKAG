@@ -19,9 +19,15 @@ const DPage = () => {
       console.log("기기 목록 로드 성공:", response.data);
       // buttons와 dials를 하나의 배열로 합쳐 저장 (각 항목에 type 속성 추가)
       // DeviceBox에서 type에 따라 다른 UI를 구성할 수 있게 하기 위함
+      // setDeviceList([
+      //   ...response.data.buttons.map((b) => ({ ...b, type: "button_clicker" })),
+      //   ...response.data.dials.map((d) => ({ ...d, type: "dial_actuator" }))
+      // ]);
+      // 테스트용 더미
       setDeviceList([
-        ...response.data.buttons.map((b) => ({ ...b, type: "button_clicker" })),
-        ...response.data.dials.map((d) => ({ ...d, type: "dial_actuator" }))
+        { id: 1, name: "다이얼 1", memo: "", type: "dial_actuator" },
+        { id: 2, name: "다이얼 2", memo: "", type: "dial_actuator" },
+        { id: 3, name: "다이얼 3", memo: "", type: "dial_actuator" },
       ]);
     } catch (error) {
         console.log(error.message);
