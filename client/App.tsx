@@ -4,10 +4,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Image } from "react-native";
 import DevicePage from "./src/screens/DevicePage";
-import AnotherPage from "./src/screens/DevicePage/AnotherPage";
+import TriggerPage from "./src/screens/TriggerPage";
 import Loading from "./src/screens/LoadingPage";
 import { registerDevice } from './src/api/deviceApi';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 const Tab = createBottomTabNavigator();
 
 const App = () => {
@@ -67,7 +68,7 @@ const App = () => {
           />
           <Tab.Screen
             name="트리거 목록 페이지"
-            component={AnotherPage}
+            component={TriggerPage}
             options={{
               tabBarLabel: "Trigger",
               tabBarIcon: ({ focused, color, size }) => (
