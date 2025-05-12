@@ -29,6 +29,4 @@ public class Button {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy = "button")
-    private List<Trigger> triggers;
 }
