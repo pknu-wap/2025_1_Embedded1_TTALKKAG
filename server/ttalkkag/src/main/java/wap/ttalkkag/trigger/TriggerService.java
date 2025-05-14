@@ -92,7 +92,7 @@ public class TriggerService {
     public void activationMqttPublish (String topic, Long doorId) {
         Door door = doorRepository.findById(doorId)
                 .orElseThrow(() -> new RuntimeException("Door not found"));
-        String triggerType = "door";
+        String triggerType = "door_sensor";
         String triggerClientId = door.getClientId();
         String payload = String.format("{\"clientType\": \"%s\", \"clientId\": \"%s\"}", triggerType, triggerClientId );
         mqttPublisherSevice.publish(topic, payload);

@@ -48,7 +48,7 @@ public class MqttController {
         Button button = buttonRepository.findById(device_id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid device id"));
         /*토픽: server/{type}/{client_id}/action*/
-        String topic = "server/button_clicker/" + button.getClientId() + "/action";
+        String topic = "server/action/button_clicker/" + button.getClientId();
         mqttPublisherSevice.publish(topic, "");
 
         return ResponseEntity.ok().build();
