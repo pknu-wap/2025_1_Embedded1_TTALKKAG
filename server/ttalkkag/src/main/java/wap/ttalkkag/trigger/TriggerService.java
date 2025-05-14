@@ -31,11 +31,12 @@ public class TriggerService {
     }
     /*트리거에 기기 추가(활성화) */
     public void activateDevice(ActivateDeviceDTO request) {
+        Long doorId = request.getDoorId();
         Long deviceId = request.getDeviceId();
         String deviceType = request.getDeviceType();
 
         TriggerId triggerId = new TriggerId();
-        triggerId.setDoorId(request.getDoorId());
+        triggerId.setDoorId(doorId);
         triggerId.setDeviceId(deviceId);
         triggerId.setDeviceType(deviceType);
 
@@ -47,16 +48,17 @@ public class TriggerService {
         /*디바이스에게 해당 트리거 내에서 활성화 되었다는 메시지 발행*/
         String clientId = findDeviceClientId(deviceType, deviceId);
         String topic = "server/subscribe/" + deviceType + "/" + clientId;
-        String payload = "";
-        mqttPublisherSevice.publish(topic, payload);
+
+        activationMqttPublish(topic, doorId);
     }
     /*트리거에서 기기 제외(비활성화)*/
     public void deactivateDevice(ActivateDeviceDTO request) {
+        Long doorId = request.getDoorId();
         Long deviceId = request.getDeviceId();
         String deviceType = request.getDeviceType();
 
         TriggerId triggerId = new TriggerId();
-        triggerId.setDoorId(request.getDoorId());
+        triggerId.setDoorId(doorId);
         triggerId.setDeviceId(deviceId);
         triggerId.setDeviceType(deviceType);
 
@@ -66,8 +68,8 @@ public class TriggerService {
             /*디바이스에게 해당 트리거 내에서 비활성화 되었다는 메시지 발행*/
             String clientId = findDeviceClientId(deviceType, deviceId);
             String topic = "server/unsubscribe/" + deviceType + "/" + clientId;
-            String payload = "";
-            mqttPublisherSevice.publish(topic, payload);
+
+            activationMqttPublish(topic, doorId);
         } else {
             throw new EntityNotFoundException("Trigger not found");
         }
@@ -85,5 +87,14 @@ public class TriggerService {
             }
             default -> throw new IllegalArgumentException("Wrong Device Type");
         };
+    }
+
+    public void activationMqttPublish (String topic, Long doorId) {
+        Door door = doorRepository.findById(doorId)
+                .orElseThrow(() -> new RuntimeException("Door not found"));
+        String triggerType = "door";
+        String triggerClientId = door.getClientId();
+        String payload = String.format("{\"clientType\": \"%s\", \"clientId\": \"%s\"}", triggerType, triggerClientId );
+        mqttPublisherSevice.publish(topic, payload);
     }
 }
