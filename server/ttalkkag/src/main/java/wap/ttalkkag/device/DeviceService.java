@@ -24,7 +24,6 @@ public class DeviceService {
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
     private final DoorRepository doorRepository;
-    private final MqttService mqttService;
     private final MqttPublisherSevice mqttPublisherSevice;
 
     /*해당 userId에 연관된 디바이스 목록을 가져옴*/

@@ -28,7 +28,4 @@ public class Door {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;
-
-    @OneToMany(mappedBy = "door", cascade = CascadeType.ALL)
-    private List<Trigger> triggers;
 }
