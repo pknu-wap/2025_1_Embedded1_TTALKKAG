@@ -32,7 +32,7 @@ const App = () => {
     initializeApp();
   }, []); 
 
-  if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
+   if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
