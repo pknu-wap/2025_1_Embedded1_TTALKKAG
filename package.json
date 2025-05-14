@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "react-native-collapsible": "^1.6.2",
-    "react-native-config": "^1.5.5"
-  }
-}
