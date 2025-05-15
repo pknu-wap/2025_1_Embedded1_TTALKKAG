@@ -83,7 +83,7 @@ public class DeviceService {
     public void patchDeviceMemo(PatchDeviceMemoDTO request) {
         Long deviceId = request.getDeviceId();
         String type = request.getType();
-        String memo = request.getMemo();;
+        String memo = request.getMemo();
         switch(type) {
             case "button_clicker" -> {
                 Button button = buttonRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
