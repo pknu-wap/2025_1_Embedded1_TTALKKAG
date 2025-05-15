@@ -37,8 +37,15 @@ public class DeviceController {
     }
     /*다이얼 최대 step 설정*/
     @PatchMapping("/max-step")
-    public ResponseEntity<Void> changeDialMaxStep(@RequestBody PatchDialMaxStepDTO request) {
+    public ResponseEntity<Void> patchDialMaxStep(@RequestBody PatchDialMaxStepDTO request) {
         deviceService.changeDialMaxStep(request);
+
+        return ResponseEntity.ok().build();
+    }
+    /*다이얼 원격 조정 Up, Down*/
+    @PostMapping("/up-down")
+    public ResponseEntity<Void> remoteDial(@RequestBody RemoteDialDTO request) {
+        deviceService.remoteDial(request);
 
         return ResponseEntity.ok().build();
     }

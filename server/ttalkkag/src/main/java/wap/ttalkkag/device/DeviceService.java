@@ -2,16 +2,12 @@ package wap.ttalkkag.device;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
 import wap.ttalkkag.domain.Door;
 import wap.ttalkkag.domain.User;
 import wap.ttalkkag.mqtt.MqttPublisherSevice;
-import wap.ttalkkag.mqtt.MqttService;
 import wap.ttalkkag.repository.ButtonRepository;
 import wap.ttalkkag.repository.DialRepository;
 import wap.ttalkkag.repository.DoorRepository;
@@ -118,6 +114,15 @@ public class DeviceService {
         String clientId = dial.getClientId();
         String topic = "server/step/dial_actuator/" + clientId;
         String payload = String.format("{\"step\": \"%d\"}", maxStep);
+        mqttPublisherSevice.publish(topic, payload);
+    }
+    /*다이얼 원격 조정 Up, Down*/
+    public void remoteDial(RemoteDialDTO request) {
+        Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
+
+        String clientId = dial.getClientId();
+        String topic = "server/" + request.getCommand() + "/dial_actuator/" + clientId;
+        String payload = "";
         mqttPublisherSevice.publish(topic, payload);
     }
 }
