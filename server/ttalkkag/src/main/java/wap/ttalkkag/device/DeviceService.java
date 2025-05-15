@@ -84,7 +84,7 @@ public class DeviceService {
         mqttPublisherSevice.publish(topic, payload);
     }
     /*기기 메모 작성*/
-    public void patchDevicememo(PatchDeviceMemoDTO request) {
+    public void patchDeviceMemo(PatchDeviceMemoDTO request) {
         Long deviceId = request.getDeviceId();
         String type = request.getType();
         String memo = request.getMemo();;
@@ -105,5 +105,19 @@ public class DeviceService {
                 doorRepository.save(door);
             }
         }
+    }
+    /*다이얼 최대 step 설정
+    * TODO: 한계치 설정?*/
+    public void changeDialMaxStep(PatchDialMaxStepDTO request) {
+        Integer maxStep = request.getStep();
+        Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
+        dial.setStep(maxStep);
+        dialRepository.save(dial);
+
+        /*최대 스텝 변경 내용을 디바이스에 알림*/
+        String clientId = dial.getClientId();
+        String topic = "server/step/dial_actuator/" + clientId;
+        String payload = String.format("{\"step\": \"%d\"}", maxStep);
+        mqttPublisherSevice.publish(topic, payload);
     }
 }

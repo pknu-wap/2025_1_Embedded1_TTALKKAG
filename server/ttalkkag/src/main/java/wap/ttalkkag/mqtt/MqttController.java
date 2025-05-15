@@ -1,6 +1,5 @@
 package wap.ttalkkag.mqtt;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

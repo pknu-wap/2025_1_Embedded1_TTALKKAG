@@ -29,9 +29,17 @@ public class DeviceController {
         deviceService.deleteDevice(request);
         return ResponseEntity.ok().build();
     }
+    /*기기 메모 변경*/
     @PatchMapping("/memo")
     public ResponseEntity<Void> patchDeviceMemo(@RequestBody PatchDeviceMemoDTO request) {
-        deviceService.patchDevicememo(request);
+        deviceService.patchDeviceMemo(request);
+        return ResponseEntity.ok().build();
+    }
+    /*다이얼 최대 step 설정*/
+    @PatchMapping("/max-step")
+    public ResponseEntity<Void> changeDialMaxStep(@RequestBody PatchDialMaxStepDTO request) {
+        deviceService.changeDialMaxStep(request);
+
         return ResponseEntity.ok().build();
     }
 }
