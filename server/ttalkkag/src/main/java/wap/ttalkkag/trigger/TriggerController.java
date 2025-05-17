@@ -27,7 +27,7 @@ public class TriggerController {
     * 우선 등록된 모든 디바이스 목록을 불러온 후
     * 해당 api로 트리거에 속한 디바이스들의 타입과 id를 받아서
     * 위 모든 디바이스 목록 중 표시*/
-    @GetMapping("/{door_id}/active_devices")
+    @GetMapping("/{door_id}/active-devices")
     public ResponseEntity<List<Trigger>> getActiveDevices(@PathVariable("door_id") Long doorId) {
         List<Trigger> activeDevices = triggerService.getActiveDevices(doorId);
         return ResponseEntity.ok(activeDevices);

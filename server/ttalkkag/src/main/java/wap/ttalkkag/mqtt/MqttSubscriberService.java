@@ -48,11 +48,10 @@ public class MqttSubscriberService implements MqttCallback {
                     //JSON 파싱
                     ObjectMapper objectMapper = new ObjectMapper();
                     JsonNode jsonNode = objectMapper.readTree(payload);
-                    String name = jsonNode.get("name").asText();
                     String type = jsonNode.get("type").asText();
                     String clientId = jsonNode.get("clientId").asText();
                     //DB에 저장
-                    saveDeviceToDB(name, type, clientId);
+                    saveDeviceToDB(type, clientId);
                 });
             } else {
                 System.err.println("MQTT 브로커에 연결되지 않음. 구독 실패");
@@ -62,7 +61,7 @@ public class MqttSubscriberService implements MqttCallback {
         }
     }
     //db에 기기를 저장하고 db내 ID를 추출하여 반환
-    private void saveDeviceToDB(String name, String type, String clientId) {
+    private void saveDeviceToDB(String type, String clientId) {
         User user = userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
         switch (type.toLowerCase()) {
             case "button_clicker" -> {
@@ -71,7 +70,7 @@ public class MqttSubscriberService implements MqttCallback {
                     return;
                 }
                 Button button = new Button();
-                button.setName(name);
+                button.setName("button clicker");
                 button.setUser(user);
                 button.setClientId(clientId);
                 buttonRepository.save(button);
@@ -82,7 +81,7 @@ public class MqttSubscriberService implements MqttCallback {
                     return;
                 }
                 Dial dial = new Dial();
-                dial.setName(name);
+                dial.setName("dial actuator");
                 dial.setStep(0);
                 dial.setUser(user);
                 dial.setClientId(clientId);
@@ -94,7 +93,7 @@ public class MqttSubscriberService implements MqttCallback {
                     return;
                 }
                 Door door = new Door();
-                door.setName(name);
+                door.setName("door sensor");
                 door.setUser(user);
                 door.setClientId(clientId);
                 doorRepository.save(door);

@@ -1,6 +1,5 @@
 package wap.ttalkkag.mqtt;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +47,7 @@ public class MqttController {
         Button button = buttonRepository.findById(device_id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid device id"));
         /*토픽: server/{type}/{client_id}/action*/
-        String topic = "server/button_clicker/" + button.getClientId() + "/action";
+        String topic = "server/action/button_clicker/" + button.getClientId();
         mqttPublisherSevice.publish(topic, "");
 
         return ResponseEntity.ok().build();

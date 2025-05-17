@@ -2,16 +2,12 @@ package wap.ttalkkag.device;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
 import wap.ttalkkag.domain.Door;
 import wap.ttalkkag.domain.User;
 import wap.ttalkkag.mqtt.MqttPublisherSevice;
-import wap.ttalkkag.mqtt.MqttService;
 import wap.ttalkkag.repository.ButtonRepository;
 import wap.ttalkkag.repository.DialRepository;
 import wap.ttalkkag.repository.DoorRepository;
@@ -84,10 +80,10 @@ public class DeviceService {
         mqttPublisherSevice.publish(topic, payload);
     }
     /*기기 메모 작성*/
-    public void patchDevicememo(PatchDeviceMemoDTO request) {
+    public void patchDeviceMemo(PatchDeviceMemoDTO request) {
         Long deviceId = request.getDeviceId();
         String type = request.getType();
-        String memo = request.getMemo();;
+        String memo = request.getMemo();
         switch(type) {
             case "button_clicker" -> {
                 Button button = buttonRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
@@ -105,5 +101,28 @@ public class DeviceService {
                 doorRepository.save(door);
             }
         }
+    }
+    /*다이얼 최대 step 설정
+    * TODO: 한계치 설정?*/
+    public void changeDialMaxStep(PatchDialMaxStepDTO request) {
+        Integer maxStep = request.getStep();
+        Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
+        dial.setStep(maxStep);
+        dialRepository.save(dial);
+
+        /*최대 스텝 변경 내용을 디바이스에 알림*/
+        String clientId = dial.getClientId();
+        String topic = "server/step/dial_actuator/" + clientId;
+        String payload = String.format("{\"step\": \"%d\"}", maxStep);
+        mqttPublisherSevice.publish(topic, payload);
+    }
+    /*다이얼 원격 조정 Up, Down*/
+    public void remoteDial(RemoteDialDTO request) {
+        Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
+
+        String clientId = dial.getClientId();
+        String topic = "server/" + request.getCommand() + "/dial_actuator/" + clientId;
+        String payload = "";
+        mqttPublisherSevice.publish(topic, payload);
     }
 }
