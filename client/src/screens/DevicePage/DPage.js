@@ -71,9 +71,16 @@ const DPage = () => {
   return (
     <View style={{ flex: 1 }}>
       <Background />
+      <AppText style={appTextStyles.text1}>TTALKKACK</AppText>
+      <AppText style={appTextStyles.text3}>Device</AppText>
+      <AppText style={appTextStyles.text2}>디바이스 페이지</AppText>
+      <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
+
+      
       {/* 기기 리스트를 스크롤 가능한 영역에 렌더링 탭바 가리지 않도록 하단 패딩 추가 */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
+       style={{ flex: 1 , marginTop:20}}
+        contentContainerStyle={{ flexGrow:1, paddingBottom: tabBarHeight + 10 }}
         showsVerticalScrollIndicator={false}
            refreshControl={
           <RefreshControl
@@ -83,11 +90,7 @@ const DPage = () => {
           />
         }
       >
-        <AppText style={appTextStyles.text1}>TTALKKACK</AppText>
-        <AppText style={appTextStyles.text3}>Device</AppText>
-        <AppText style={appTextStyles.text2}>디바이스 페이지</AppText>
-        <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
-
+        
         {/* 기기 목록을 map으로 순회하여 DeviceBox 컴포넌트로 렌더링 */}
         {deviceList.map((device) => (
           <DeviceBox
