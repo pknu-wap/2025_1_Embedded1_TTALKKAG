@@ -1,6 +1,8 @@
 package wap.ttalkkag.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import wap.ttalkkag.domain.Door;
 import wap.ttalkkag.domain.User;
@@ -15,4 +17,7 @@ public interface DoorRepository extends JpaRepository<Door, Long> {
 
     /*user_id에 속한 door_sensor 목록*/
     List<Door> findByUserId(Long userId);
+
+    @Query("SELECT d.clientId FROM Door d WHERE d.id IN :triggerIds")
+    List<String> findClientIdsByIds(@Param("triggerIds") List<Long> triggerIds);
 }
