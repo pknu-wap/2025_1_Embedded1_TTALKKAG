@@ -1,37 +1,40 @@
-import React from "react";
-import { Text, StyleSheet, View } from "react-native";
+import React from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
-const TriggerList = ({ children, style, textStyle }) => {
+const TriggerList = ({ text, isSelected }) => {
   return (
-    <View style={style}>
-      <Text style={textStyle}>{children}</Text>
+    <View style={[styles.listItem, isSelected && styles.selected]}>
+      <Text style={[styles.text, { color: isSelected ? '#000' : '#888' }]}>{text}</Text>
+      <Image
+        source={require('../../../../assets/setting_icon.png')} 
+        style={styles.editIcon}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  baseItem: {
-    padding: 12,
-    marginHorizontal: 8,
-    borderRadius: 50,
-    borderWidth: 0,
-    borderColor: "rgba(0, 0, 0, 0.1)",
-    width: 110,
-    height: 45,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "transparent",
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    paddingHorizontal: 25,
+    paddingVertical: 8,
   },
-  selectedListItem: {
-    backgroundColor: "#F3F8F7",
-    elevation: 7,
+  selected: {
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    elevation: 15,
   },
-  listText: {
+  text: {
+    fontWeight: 'bold',
     fontSize: 14,
-    fontWeight: "bold",
-    color: "#000",
-    textAlign: "center",
+  },
+  editIcon: {
+    width: 14,
+    height: 14,
+    marginLeft: 6,
   },
 });
 
-export { TriggerList, styles };
+export { TriggerList };
