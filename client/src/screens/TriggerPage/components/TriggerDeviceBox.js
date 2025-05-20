@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, Image, ImageBackground, StyleSheet
+  Text, TouchableOpacity, Image, ImageBackground, StyleSheet, TextInput
 } from 'react-native';
 
-const TriggerDeviceBox = ({ item, index, onToggle }) => {
+const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNameChange, onSubmit }) => {
   const isOn = item.status;
 
   return (
@@ -21,7 +21,26 @@ const TriggerDeviceBox = ({ item, index, onToggle }) => {
           source={require('../../../../assets/device_icon.png')}
           style={styles.icon}
         />
-        <Text style={styles.name}>{item.name}</Text>
+        <TouchableOpacity onPress={onEditStart}>
+          {isEditing ? (
+            <TextInput
+              value={item.name}
+              onChangeText={onNameChange}
+              onSubmitEditing={() => onSubmit(item.name)}
+              style={styles.nameInput}
+              autoFocus
+              maxLength={7}
+              blurOnSubmit={true}
+              keyboardType="default"
+              textContentType="none"
+              autoCorrect={false}
+              autoComplete="off"
+              importantForAutofill="no"
+            />
+          ) : (
+            <Text style={styles.name}>{item.name}</Text>
+          )}
+        </TouchableOpacity>
       </ImageBackground>
     </TouchableOpacity>
   );
@@ -29,11 +48,11 @@ const TriggerDeviceBox = ({ item, index, onToggle }) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    width:175,
-    height:200,
+    width: 175,
+    height: 200,
     aspectRatio: 1,
     marginHorizontal: 10,
-    marginVertical: -6, 
+    marginVertical: -6,
   },
   box: {
     flex: 1,
@@ -46,14 +65,23 @@ const styles = StyleSheet.create({
     width: 37,
     height: 30,
     marginBottom: 10,
-    marginTop:25,
-    marginLeft:10,
+    marginTop: 25,
+    marginLeft: 10,
   },
   name: {
     fontWeight: 'bold',
     fontSize: 16,
     color: '#000',
-    marginLeft:10,
+    marginLeft: 10,
+  },
+  nameInput: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#eee',
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    marginLeft: 10,
+    width: 120,
   },
 });
 

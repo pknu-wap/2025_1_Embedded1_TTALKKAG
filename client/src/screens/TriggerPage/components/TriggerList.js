@@ -1,14 +1,33 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native';
 
-const TriggerList = ({ text, isSelected }) => {
+const TriggerList = ({ text, isSelected, isEditing, onEditPress, onNameChange, onSubmit }) => {
   return (
     <View style={[styles.listItem, isSelected && styles.selected]}>
-      <Text style={[styles.text, { color: isSelected ? '#000' : '#888' }]}>{text}</Text>
-      <Image
-        source={require('../../../../assets/setting_icon.png')} 
-        style={styles.editIcon}
-      />
+      {isEditing ? (
+        <TextInput
+          style={[styles.text, styles.input]}
+          value={text}
+          onChangeText={onNameChange}
+          onSubmitEditing={() => onSubmit(text)}
+          maxLength={7}
+          autoFocus
+          blurOnSubmit={true}
+          keyboardType="default"
+          textContentType="none"
+          autoCorrect={false}
+          autoComplete="off"
+          importantForAutofill="no"
+        />
+      ) : (
+        <Text style={[styles.text, { color: isSelected ? '#000' : '#888' }]}>{text}</Text>
+      )}
+      <TouchableOpacity onPress={onEditPress}>
+        <Image
+          source={require('../../../../assets/pencil_icon.png')}
+          style={styles.editIcon}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -18,8 +37,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 10,
-    paddingHorizontal: 25,
-    paddingVertical: 8,
+    paddingHorizontal: 50,
+    paddingVertical: 9,
   },
   selected: {
     backgroundColor: '#fff',
@@ -30,10 +49,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
+  input: {
+    backgroundColor: '#eee',
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    minWidth: 60,
+  },
   editIcon: {
     width: 14,
     height: 14,
     marginLeft: 6,
+    tintColor: "#b0b0b0"
   },
 });
 
