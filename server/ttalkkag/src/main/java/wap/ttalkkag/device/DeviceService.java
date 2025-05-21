@@ -102,27 +102,46 @@ public class DeviceService {
             }
         }
     }
-    /*다이얼 최대 step 설정
-    * TODO: 한계치 설정?*/
-    public void changeDialMaxStep(PatchDialMaxStepDTO request) {
-        Integer maxStep = request.getStep();
+    /*다이얼 step unit 설정*/
+    public void changeDialStepUnit(PatchDialMaxStepDTO request) {
+        Integer stepUnit = request.getStep();
         Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
-        dial.setStep(maxStep);
+        dial.setStepUnit(stepUnit);
         dialRepository.save(dial);
 
-        /*최대 스텝 변경 내용을 디바이스에 알림*/
+        /*스텝 유닛 변경 내용을 디바이스에 알림*/
         String clientId = dial.getClientId();
         String topic = "server/step/dial_actuator/" + clientId;
-        String payload = String.format("{\"step\": \"%d\"}", maxStep);
+        String payload = String.format("{\"step\": \"%d\"}", stepUnit);
         mqttPublisherSevice.publish(topic, payload);
     }
     /*다이얼 원격 조정 Up, Down*/
     public void remoteDial(RemoteDialDTO request) {
         Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
-
-        String clientId = dial.getClientId();
-        String topic = "server/" + request.getCommand() + "/dial_actuator/" + clientId;
-        String payload = "";
-        mqttPublisherSevice.publish(topic, payload);
+        String command = request.getCommand();
+        boolean updated = false;
+        /*다음 스텝이 0 이상 100 이하 일때만 DB 갱신 및 통신*/
+        if (command.equals("up")) {
+            int nextStep = dial.getStep() + dial.getStepUnit();
+            if (nextStep <= 100) {
+                dial.setStep(nextStep);
+                updated = true;
+            }
+        }
+        if (command.equals("down")) {
+            int nextStep = dial.getStep() - dial.getStepUnit();
+            if (nextStep >= 0) {
+                dial.setStep(nextStep);
+                updated = true;
+            }
+        }
+        dialRepository.save(dial);
+        /*DB에 갱신이 있는 경우에 기기에 송신*/
+        if (updated) {
+            String clientId = dial.getClientId();
+            String topic = "server/" + command + "/dial_actuator/" + clientId;
+            String payload = "";
+            mqttPublisherSevice.publish(topic, payload);
+        }
     }
 }
