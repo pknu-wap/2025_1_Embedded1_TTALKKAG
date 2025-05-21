@@ -19,8 +19,6 @@ const { width, height } = Dimensions.get("window");
 const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [expanded, setExpanded] = useState(false);
 
-  const [isEditingDial, setIsEditingDial] = useState(false);
-
   // 이름 수정 관련 상태
   const [isEditing, setIsEditing] = useState(false);
   const [deviceName, setDeviceName] = useState(name);
@@ -32,9 +30,11 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [memoValue, setMemoValue] = useState(memo || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
 
-  const [dialValue, setDialValue] = useState(4); // 초기값 4, 1~7 사이
-  const DIAL_MIN = 1;
-  const DIAL_MAX = 7;
+  const [dialValue, setDialValue] = useState(0); 
+  const [isEditingStep, setIsEditingStep] = useState(false);
+  const [step, setStep] = useState(1); 
+  const DIAL_MIN = 0;
+  const DIAL_MAX = 100;
 
   // 전원 버튼
   const handlePress = async () => {
@@ -240,65 +240,76 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   <View style={styles.expandedBox}>
     <View style={styles.dialRow}>
     <View style={styles.dialValueBox}>
+    <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => setIsEditingStep(true)}
+    style={{ borderRadius: 12, overflow: "hidden" }}
+  >
   <ImageBackground
     source={require('../../../../assets/dial_bg.png')}
     style={{ width: 250, height: 95, justifyContent: "center", borderRadius: 12, marginLeft:30 }}
     imageStyle={{ borderRadius: 10 }}
   >
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-      {isEditingDial ? (
-        <TextInput
-          style={{
-            fontSize: 36,
-            fontWeight: "bold",
-            color: "#222",
-          }}
-          value={String(dialValue)}
-          keyboardType="number-pad"
-          maxLength={1}
-          onChangeText={text => {
-            // 숫자만 남기고, 빈 문자열 허용
-            const onlyNum = text.replace(/[^0-9]/g, "");
-            if (onlyNum === "") {
-              setDialValue(""); // 비울 수 있게
-            } else {
-              const num = Number(onlyNum);
-              if (num >= DIAL_MIN && num <= DIAL_MAX) {
-                setDialValue(num);
+    {isEditingStep ? (
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ fontSize: 20, marginRight: 8 }}>스텝조정:</Text>
+          <TextInput
+            style={{
+              fontSize: 28,
+              fontWeight: "bold",
+              color: "#222",
+              width: 60,
+              borderBottomWidth: 1,
+              borderColor: "#4999BA",
+              textAlign: "center"
+            }}
+            value={step === "" ? "" : String(step)}
+            keyboardType="number-pad"
+            maxLength={2}
+            autoFocus
+            onChangeText={txt => {
+              const onlyNum = txt.replace(/[^0-9]/g, "");
+              if (onlyNum === "") {
+                setStep("");
+                return;
               }
-            }
-          }}
-          
-          onBlur={() => setIsEditingDial(false)}
-          autoFocus
-        />
+              let num = Number(onlyNum);
+              if (num < 1) num = 1;
+              if (num > 50) num = 50;
+              setStep(num);
+            }}
+            onBlur={() => {
+    
+                if (step === "" || Number(step) < 1) setStep(1);
+                setIsEditingStep(false);
+              }}
+          />
+        </View>
       ) : (
-        <>
-          <TouchableOpacity onPress={() => setIsEditingDial(true)}>
-            <Text style={styles.dialValueText}>{dialValue}</Text>
-          </TouchableOpacity>
+       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Text style={styles.dialValueText}>{dialValue}</Text>
           <Text style={styles.dialValueText}> / {DIAL_MAX}</Text>
-        </>
+        </View>
       )}
-    </View>
   </ImageBackground>
+  </TouchableOpacity>
 </View>
       <View style={styles.dialButtonCol}>
-        <TouchableOpacity
-          style={[styles.dialBtn, dialValue === DIAL_MAX && styles.dialBtnDisabled]}
-          onPress={() => setDialValue(v => Math.min(DIAL_MAX, v + 1))}
-          disabled={dialValue === DIAL_MAX}
+       <TouchableOpacity
+          style={[styles.dialBtn, dialValue + step > DIAL_MAX && styles.dialBtnDisabled]}
+          onPress={() => setDialValue(v => Math.min(DIAL_MAX, v + step))}
+          disabled={dialValue + step > DIAL_MAX}
         >
           <Image 
           source={require('../../../../assets/up.png')} 
           style={{ width: 100, height: 45, marginTop: 100, marginBottom: 3}}
           resizeMode="contain" />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.dialBtn, dialValue === DIAL_MIN && styles.dialBtnDisabled]}
-          onPress={() => setDialValue(v => Math.max(DIAL_MIN, v - 1))}
-          disabled={dialValue === DIAL_MIN}
-        >
+      <TouchableOpacity
+        style={[styles.dialBtn, dialValue - step < DIAL_MIN && styles.dialBtnDisabled]}
+        onPress={() => setDialValue(v => Math.max(DIAL_MIN, v - step))}
+        disabled={dialValue - step < DIAL_MIN}
+      >
           <Image 
           source={require('../../../../assets/down.png')}
           style={{ width: 100, height: 45, marginBottom: 45 }}
