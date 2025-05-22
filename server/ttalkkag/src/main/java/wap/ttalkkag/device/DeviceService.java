@@ -104,16 +104,22 @@ public class DeviceService {
     }
     /*다이얼 step unit 설정*/
     public void changeDialStepUnit(PatchDialMaxStepDTO request) {
-        Integer stepUnit = request.getStep();
+        Integer newStepUnit = request.getStep();
         Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
-        dial.setStepUnit(stepUnit);
-        dialRepository.save(dial);
+        /*갱신이 이루어질 때만 DB 갱신 & MQTT 통신*/
+        if (newStepUnit != dial.getStepUnit()) {
+            dial.setStepUnit(newStepUnit);
+            /*스텝 유닛 변경 시, 현재 스텝 0으로 초기화
+             * 일관성을 위함*/
+            dial.setStep(0);
+            dialRepository.save(dial);
 
-        /*스텝 유닛 변경 내용을 디바이스에 알림*/
-        String clientId = dial.getClientId();
-        String topic = "server/step/dial_actuator/" + clientId;
-        String payload = String.format("{\"step\": \"%d\"}", stepUnit);
-        mqttPublisherSevice.publish(topic, payload);
+            /*스텝 유닛 변경 내용을 디바이스에 알림*/
+            String clientId = dial.getClientId();
+            String topic = "server/step/dial_actuator/" + clientId;
+            String payload = String.format("{\"step\": \"%d\"}", newStepUnit);
+            mqttPublisherSevice.publish(topic, payload);
+        }
     }
     /*다이얼 원격 조정 Up, Down*/
     public void remoteDial(RemoteDialDTO request) {
