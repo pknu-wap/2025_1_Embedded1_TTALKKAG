@@ -35,10 +35,10 @@ public class DeviceController {
         deviceService.patchDeviceMemo(request);
         return ResponseEntity.ok().build();
     }
-    /*다이얼 최대 step 설정*/
-    @PatchMapping("/max-step")
+    /*다이얼 step unit 설정*/
+    @PatchMapping("/step-unit")
     public ResponseEntity<Void> patchDialMaxStep(@RequestBody PatchDialMaxStepDTO request) {
-        deviceService.changeDialMaxStep(request);
+        deviceService.changeDialStepUnit(request);
 
         return ResponseEntity.ok().build();
     }

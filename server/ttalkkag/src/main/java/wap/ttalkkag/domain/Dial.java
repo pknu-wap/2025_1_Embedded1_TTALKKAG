@@ -22,7 +22,8 @@ public class Dial {
 
     private String name;
     private String clientId;
-    private Integer step;
+    private Integer step = 0;
+    private Integer stepUnit = 0;
     private String memo;
 
     @ManyToOne(fetch = FetchType.LAZY)

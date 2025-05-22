@@ -57,6 +57,7 @@ public class MqttSubscriberService implements MqttCallback {
                     String clientId = jsonNode.get("clientId").asText();
                     //DB에 저장
                     Long deviceId = saveDeviceToDB(type, clientId);
+                    System.out.println(deviceId);
                     /*이미 DB에 있는 경우, 해당 기기가 속한 트리거 목록을 반환*/
                     if (deviceId != 0) {
                         /*device가 속한 트리거 id 목록
