@@ -12,11 +12,11 @@ import {
   ImageBackground
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo } from '../../../api/deviceApi';
+import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
-const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
+const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUnit  }) => {
   const [expanded, setExpanded] = useState(false);
 
   // 이름 수정 관련 상태
@@ -30,9 +30,9 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
   const [memoValue, setMemoValue] = useState(memo || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
 
-  const [dialValue, setDialValue] = useState(0); 
+  const [dialValue, setDialValue] = useState(dialStep); 
   const [isEditingStep, setIsEditingStep] = useState(false);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(stepUnit); 
   const DIAL_MIN = 0;
   const DIAL_MAX = 100;
 
@@ -109,6 +109,22 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
       </Animated.View>
     );
   };
+  // 다이얼 업다운 조정 통신
+  const handleDialButton = async (command) => {
+  try {
+    await pressDialButoon(id, command);
+    console.log(`요청 성공`);
+    setDialValue((prev) => {
+      if (command === "up") return Math.min(DIAL_MAX, prev + step);
+      if (command === "down") return Math.max(DIAL_MIN, prev - step);
+      return prev;
+    });
+  } catch (err) {
+    Alert.alert("다이얼 제어 실패");
+    console.error(`실패:`, err.message, err.response?.data);
+  }
+};
+
   // 메모 저장 api
   const handleMemoSave = async () => {
     setIsEditingMemo(false);
@@ -278,11 +294,24 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
               if (num > 50) num = 50;
               setStep(num);
             }}
-            onBlur={() => {
-    
-                if (step === "" || Number(step) < 1) setStep(1);
-                setIsEditingStep(false);
-              }}
+           onBlur={async () => {
+            // 입력값 보정
+            let sendStep = step;
+            if (sendStep === "" || Number(sendStep) < 1) sendStep = 1;
+            if (Number(sendStep) > 50) sendStep = 50;
+            setStep(sendStep);
+
+            try {
+              await setDialStepUnit(id, Number(sendStep));
+              setDialValue(0); //0으로 초기화
+              console.log("스텝 유닛 설정 성공");
+            } catch (err) {
+              Alert.alert("스텝 유닛 설정 실패");
+              console.error("스텝 유닛 실패:", err.message, err.response?.data);
+            }
+            setIsEditingStep(false);
+          }}
+
           />
         </View>
       ) : (
@@ -297,7 +326,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
       <View style={styles.dialButtonCol}>
        <TouchableOpacity
           style={[styles.dialBtn, dialValue + step > DIAL_MAX && styles.dialBtnDisabled]}
-          onPress={() => setDialValue(v => Math.min(DIAL_MAX, v + step))}
+          onPress={() => handleDialButton("up")}
           disabled={dialValue + step > DIAL_MAX}
         >
           <Image 
@@ -307,7 +336,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
         </TouchableOpacity>
       <TouchableOpacity
         style={[styles.dialBtn, dialValue - step < DIAL_MIN && styles.dialBtnDisabled]}
-        onPress={() => setDialValue(v => Math.max(DIAL_MIN, v - step))}
+        onPress={() => handleDialButton("down")}
         disabled={dialValue - step < DIAL_MIN}
       >
           <Image 
