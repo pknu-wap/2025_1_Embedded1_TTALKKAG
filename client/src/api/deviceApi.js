@@ -60,7 +60,7 @@ export const deleteDevice = async (payload) => {
     data: payload
   });
 };
-// 5) 디바이스 메모 작성 (PATCH)
+// 6) 디바이스 메모 작성 (PATCH)
 
 export const saveDeviceMemo = async (deviceId, type, memo) => {
   const url = `${BASE_URL}/device/memo`;
@@ -74,4 +74,36 @@ export const saveDeviceMemo = async (deviceId, type, memo) => {
       "Accept": "application/json"
     }
   });
+};
+
+// 7) 다이얼 업다운 버튼 누르기기 (POST)
+export const pressDialButoon = async (deviceId, command) => {
+  const url = `${BASE_URL}/device/up-down`;
+  return axios.post(url,{
+      deviceId: deviceId,
+      command: command
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      }
+    }
+  );
+};
+
+// 8) 다이얼 스탭유닛 설정 (PATCH)
+export const setDialStepUnit = async (deviceId, step) => {
+  const url = `${BASE_URL}/device/step-unit`;
+  return axios.patch(url,{
+      deviceId: deviceId,
+      step: step
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      }
+    }
+  );
 };
