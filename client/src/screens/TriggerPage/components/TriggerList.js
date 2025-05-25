@@ -1,7 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+} from 'react-native';
 
-const TriggerList = ({ text, isSelected, isEditing, onEditPress, onNameChange, onSubmit }) => {
+const TriggerList = ({
+  text,
+  isSelected,
+  isEditing,
+  onEditPress,
+  onNameChange,
+  onSubmit,
+  onLongPress,
+  showDelete,
+  onDeleteRequest,
+}) => {
   return (
     <View style={[styles.listItem, isSelected && styles.selected]}>
       {isEditing ? (
@@ -20,14 +38,25 @@ const TriggerList = ({ text, isSelected, isEditing, onEditPress, onNameChange, o
           importantForAutofill="no"
         />
       ) : (
-        <Text style={[styles.text, { color: isSelected ? '#000' : '#888' }]}>{text}</Text>
+        <Pressable onLongPress={onLongPress}>
+          <Text style={[styles.text, { color: isSelected ? '#000' : '#888' }]}>
+            {text}
+          </Text>
+        </Pressable>
       )}
+
       <TouchableOpacity onPress={onEditPress}>
         <Image
           source={require('../../../../assets/pencil_icon.png')}
           style={styles.editIcon}
         />
       </TouchableOpacity>
+
+      {showDelete && (
+        <TouchableOpacity onPress={onDeleteRequest}>
+          <Text style={styles.deleteX}>X</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -59,7 +88,13 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     marginLeft: 6,
-    tintColor: "#b0b0b0"
+    tintColor: '#b0b0b0',
+  },
+  deleteX: {
+    marginLeft: 5,
+    fontSize: 16,
+    color: 'blue',
+    fontWeight: 'bold',
   },
 });
 
