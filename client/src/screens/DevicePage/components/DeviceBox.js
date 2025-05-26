@@ -148,6 +148,20 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
       borderBottomRightRadius: isExpanded ? 0 : 31, // 확장 시 0, 아니면 31
     }
   ];
+
+let iconSource;
+if (type === "dial_actuator") {
+  iconSource = require('../../../../assets/dial_icon.png');
+} else if (type === "button_clicker") {
+  iconSource = require('../../../../assets/button_icon.png');
+} 
+
+<Image
+  source={iconSource}
+  style={styles.deviceIcon}
+  resizeMode="contain"
+/>
+
   return (
     <View style={styles.wrapper}>
       <Swipeable
@@ -168,17 +182,25 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
           }
         ]}>
           {isDial && (
-            <TouchableOpacity style={styles.chevronBtn} onPress={() => setExpanded(e => !e)}>
-              <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
+            <TouchableOpacity style={styles.toggleBtn} onPress={() => setExpanded(e => !e)}>
+              <Image
+                source={
+                  expanded
+                    ? require('../../../../assets/toggle-down.png')
+                    : require('../../../../assets/toggle-right.png')
+                }
+                style={styles.toggleImage}
+              />
             </TouchableOpacity>
           )}
 
           <View style={styles.headerRow}>
             <Image
-              source={require('../../../../assets/device_icon.png')}
+              source={iconSource}
               style={styles.deviceIcon}
               resizeMode="contain"
             />
+
 
             <View style={styles.textArea}>
               {isEditing ? (
@@ -360,7 +382,7 @@ const styles = StyleSheet.create({
   },
   innerBox: {
     width: width * 0.85,
-    height: height * 0.18,
+    height: height * 0.15,
     backgroundColor: "white",
     borderRadius: 31,
     borderWidth: 1,
@@ -373,16 +395,17 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
-  chevronBtn: {
+  toggleBtn: {
     position: "absolute",
-    top: 2,
-    right: 5,
-    zIndex: 10,
-    padding: 6,
+    top: 20,
+    right: 10,
   },
-  chevron: {
-    fontSize: 15,
-  },
+  toggleImage: {
+  width: 18,  
+  height: 18,
+  resizeMode: 'contain',
+},
+
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -391,8 +414,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   deviceIcon: {
-    width: 60,
-    height: 60,
+    width: 65,
+    height: 65,
     marginLeft: 10,
   },
   textArea: {
@@ -404,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 19,
     color: "#4999BA",
-    marginTop: 10,
+    marginTop: 1,
     
   },
   powerBtn: {
@@ -450,9 +473,9 @@ const styles = StyleSheet.create({
   memoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
-  memoDisplay: {
+  memoDisplay: { 
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
@@ -465,9 +488,6 @@ const styles = StyleSheet.create({
   },
   memoTextPlaceholder: {
     color: "#b0b0b0",
-  },
-  memoTextFilled: {
-   
   },
   memoIcon: {
     width: 14,
