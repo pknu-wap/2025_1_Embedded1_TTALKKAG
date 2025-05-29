@@ -10,14 +10,15 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "doors")
+@Table(name = "trigger_devices")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Door {
+public class TriggerDevice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String triggerType;
     private String name;
     private String clientId;
     private String memo;

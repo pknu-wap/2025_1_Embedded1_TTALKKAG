@@ -18,9 +18,9 @@ public class Trigger {
     private String name;
 
     @ManyToOne
-    @MapsId("doorId")
-    @JoinColumn(name = "door_id", insertable = false, updatable = false)
-    private Door door;
+    @MapsId("triggerDeviceId")
+    @JoinColumn(name = "trigger_device_id", insertable = false, updatable = false)
+    private TriggerDevice triggerDevice;
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, insertable = false, updatable = false)
