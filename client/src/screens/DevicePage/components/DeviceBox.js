@@ -285,7 +285,7 @@ if (type === "dial_actuator") {
   >
   <ImageBackground
     source={require('../../../../assets/dial_bg.png')}
-    style={{ width: 250, height: 95, justifyContent: "center", borderRadius: 12, marginLeft:30 }}
+    style={{ width: 240, height: 100, justifyContent: "center", marginLeft:30 }}
     imageStyle={{ borderRadius: 10 }}
   >
     {isEditingStep ? (
@@ -353,7 +353,7 @@ if (type === "dial_actuator") {
         >
           <Image 
           source={require('../../../../assets/up.png')} 
-          style={{ width: 100, height: 45, marginTop: 100, marginBottom: 3}}
+          style={{ width: 100, height: 45, marginTop: 100, marginBottom: 10}}
           resizeMode="contain" />
         </TouchableOpacity>
       <TouchableOpacity
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   innerBox: {
     width: width * 0.85,
-    height: height * 0.15,
+    height: height * 0.18,
     backgroundColor: "white",
     borderRadius: 31,
     borderWidth: 1,
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   },
   expandedBox: {
     width: width * 0.85,
-    height: height * 0.13,
+    height: height * 0.18,
     backgroundColor: "white",
     borderLeftWidth: 1,
     borderRightWidth: 1,
@@ -524,6 +524,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    marginLeft: 10
   },
 
   dialBtnDisabled: {
