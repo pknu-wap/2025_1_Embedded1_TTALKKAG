@@ -23,18 +23,6 @@ const DPage = () => {
         ...response.data.buttons.map((b) => ({ ...b, type: "button_clicker" })),
         ...response.data.dials.map((d) => ({ ...d, type: "dial_actuator" }))
       ]);
-      // 테스트용 더미
-      // setDeviceList([
-      //   { id: 1, name: "다이얼 1", memo: "", type: "dial_actuator" },
-      //   { id: 2, name: "다이얼 2", memo: "", type: "dial_actuator" },
-      //   { id: 3, name: "다이얼 3", memo: "", type: "dial_actuator" },
-      //   { id: 4, name: "다이얼 4", memo: "", type: "dial_actuator" },
-      //   { id: 5, name: "다이얼 4", memo: "", type: "dial_actuator" },
-      //   { id: 6, name: "다이얼 4", memo: "", type: "dial_actuator" },
-
-      
-
-      // ]);
     } catch (error) {
         console.log(error.message);
       }

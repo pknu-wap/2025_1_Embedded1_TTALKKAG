@@ -17,22 +17,26 @@ import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialBut
 const { width, height } = Dimensions.get("window");
 
 const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUnit  }) => {
-  const [expanded, setExpanded] = useState(false);
+  
+  
+  const [expanded, setExpanded] = useState(false); // 다이얼 확장 여부
 
   // 이름 수정 관련 상태
-  const [isEditing, setIsEditing] = useState(false);
-  const [deviceName, setDeviceName] = useState(name);
-  const [tempName, setTempName] = useState(name);
+  const [isEditing, setIsEditing] = useState(false); //이름 수정중인 모드
+  const [deviceName, setDeviceName] = useState(name); // 현재 디바이스 이름
+  const [tempName, setTempName] = useState(name); // 임시로 이름 입력값
   
-  // 오른쪽 borderRadius 
+  // 오른쪽 borderRadius: 스와이프시 변화
   const [rightRadius, setRightRadius] = useState(31);
 
-  const [memoValue, setMemoValue] = useState(memo || '');
-  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  // 메모 관련 상태
+  const [memoValue, setMemoValue] = useState(memo || '');  // 메모 입력값
+  const [isEditingMemo, setIsEditingMemo] = useState(false); // 메모 수정모드
 
-  const [dialValue, setDialValue] = useState(dialStep); 
-  const [isEditingStep, setIsEditingStep] = useState(false);
-  const [step, setStep] = useState(stepUnit); 
+  // 다이얼 관련 상태 
+  const [dialValue, setDialValue] = useState(dialStep);  //다이얼 값 
+  const [isEditingStep, setIsEditingStep] = useState(false); //스텝 수정모드 
+  const [step, setStep] = useState(stepUnit);  // 다이얼 스텝 값 
   const DIAL_MIN = 0;
   const DIAL_MAX = 100;
 
@@ -58,11 +62,9 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
       try {
         await changeDeviceName(id, type, tempName);
         console.log("이름변경 성공")
-
         setDeviceName(tempName);
       } catch (err) {
         console.log("이름 변경 실패:", err.message, err.response?.data);
-
         setTempName(deviceName);
       }
     }
@@ -84,7 +86,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
               await deleteDevice({ type, deviceId: id });
               onDelete(id,type); 
             } catch (err) {
-              Alert.alert("삭제 실패", "기기를 제거하는 중 오류가 발생했습니다.");
+              Alert.alert("삭제 실패");
               console.log("에러메시지", err.message)
             }
           }
@@ -93,7 +95,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
     );
   };
   
-  // 삭제 버튼
+  // 스와이프시 삭제 버튼
   const renderRightActions = (progress, dragX) => {
     const trans = dragX.interpolate({
       inputRange: [-100, 0],
@@ -109,6 +111,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
       </Animated.View>
     );
   };
+
   // 다이얼 업다운 조정 통신
   const handleDialButton = async (command) => {
   try {
@@ -120,7 +123,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
       return prev;
     });
   } catch (err) {
-    Alert.alert("다이얼 제어 실패");
+    Alert.alert("제어 실패");
     console.error(`실패:`, err.message, err.response?.data);
   }
 };
@@ -137,6 +140,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
     }
   };
   
+  // 다이얼변수 다이얼이면 토글창 보이게하기 위해서
   const isDial = type === "dial_actuator";
   const isExpanded = isDial && expanded;
 
@@ -149,6 +153,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
     }
   ];
 
+  // 타입별 아이콘 
 let iconSource;
 if (type === "dial_actuator") {
   iconSource = require('../../../../assets/dial_icon.png');
@@ -156,14 +161,9 @@ if (type === "dial_actuator") {
   iconSource = require('../../../../assets/button_icon.png');
 } 
 
-<Image
-  source={iconSource}
-  style={styles.deviceIcon}
-  resizeMode="contain"
-/>
-
   return (
     <View style={styles.wrapper}>
+      {/* 스와이프 삭제 기능 */}
       <Swipeable
         renderRightActions={renderRightActions}
         overshootRight={false}
@@ -172,6 +172,7 @@ if (type === "dial_actuator") {
         onSwipeableOpen={() => setRightRadius(0)}
         onSwipeableClose={() => setRightRadius(31)}
       >
+        
         <View style={[
           styles.innerBox,
           expanded && isDial && styles.innerBoxExpanded,
@@ -181,6 +182,7 @@ if (type === "dial_actuator") {
             borderBottomRightRadius: expanded ? 0 : rightRadius,
           }
         ]}>
+           {/* 다이얼이면 토글 버튼 */}
           {isDial && (
             <TouchableOpacity style={styles.toggleBtn} onPress={() => setExpanded(e => !e)}>
               <Image
@@ -193,7 +195,7 @@ if (type === "dial_actuator") {
               />
             </TouchableOpacity>
           )}
-
+             {/* 디바이스 아이콘 영역 */}
           <View style={styles.headerRow}>
             <Image
               source={iconSource}
@@ -201,7 +203,7 @@ if (type === "dial_actuator") {
               resizeMode="contain"
             />
 
-
+             {/* 디바이스 이름 영역 */}
             <View style={styles.textArea}>
               {isEditing ? (
                 <TextInput
@@ -218,7 +220,7 @@ if (type === "dial_actuator") {
                   <Text style={styles.deviceTitle} numberOfLines={1} ellipsizeMode="tail">{deviceName}</Text>
                 </TouchableOpacity>
               )}
-                 {/* 메모 입력/표시 영역 */}
+                 {/* 메모 입력/표시시 영역 */}
                   <View style={styles.memoRow}>
                     {isEditingMemo ? (
                       <>
@@ -263,7 +265,7 @@ if (type === "dial_actuator") {
                     )}
                   </View>
                 </View>
-
+              {/* 전원 버튼 */}
             <TouchableOpacity onPress={handlePress}>
               <Image
                 source={require('../../../../assets/power_on.png')}
@@ -274,9 +276,11 @@ if (type === "dial_actuator") {
           </View>
         </View>
       </Swipeable>
+      {/*  다이얼 확장 */}
       {isDial && expanded && (
   <View style={styles.expandedBox}>
     <View style={styles.dialRow}>
+      {/*  다이얼 값 스텝 조정 박스 */}
     <View style={styles.dialValueBox}>
     <TouchableOpacity
     activeOpacity={0.8}
@@ -345,6 +349,7 @@ if (type === "dial_actuator") {
   </ImageBackground>
   </TouchableOpacity>
 </View>
+         {/* 업다운 버튼 */}
       <View style={styles.dialButtonCol}>
        <TouchableOpacity
           style={[styles.dialBtn, dialValue + step > DIAL_MAX && styles.dialBtnDisabled]}
