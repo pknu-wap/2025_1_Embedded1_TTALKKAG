@@ -1,17 +1,12 @@
 package wap.ttalkkag.device;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import wap.ttalkkag.domain.Button;
-import wap.ttalkkag.domain.Dial;
-import wap.ttalkkag.domain.TriggerDevice;
-import wap.ttalkkag.domain.User;
+import wap.ttalkkag.domain.*;
 import wap.ttalkkag.mqtt.MqttPublisherSevice;
-import wap.ttalkkag.repository.ButtonRepository;
-import wap.ttalkkag.repository.DialRepository;
-import wap.ttalkkag.repository.TriggerDeviceRepository;
-import wap.ttalkkag.repository.UserRepository;
+import wap.ttalkkag.repository.*;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +14,7 @@ public class DeviceService {
     private final UserRepository userRepository;
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
+    private final TriggerRepository triggerRepository;
     private final TriggerDeviceRepository triggerDeviceRepository;
     private final MqttPublisherSevice mqttPublisherSevice;
 
@@ -52,9 +48,12 @@ public class DeviceService {
         }
     }
     /*기기 삭제, 등록 해제 메시지 mqtt로 기기에 수신*/
+    @Transactional
     public void deleteDevice(DeleteDeviceDTO request) {
         Long deviceId = request.getDeviceId();
         String type = request.getType();
+        //device 제거 시 연결된 trigger 레코드 제거
+        triggerRepository.deleteByIdDeviceIdAndIdDeviceType(deviceId, type);
         String clientId;
         switch(type) {
             case "button_clicker" -> {

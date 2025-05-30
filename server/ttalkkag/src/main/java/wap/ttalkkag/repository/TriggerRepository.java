@@ -17,4 +17,5 @@ public interface TriggerRepository extends JpaRepository<Trigger, TriggerId> {
     List<Long> findTriggerDeviceIdsByDeviceTypeAndDeviceId(@Param("deviceType") String deviceType,
                                                   @Param("deviceId") Long deviceId);
 
+    void deleteByIdDeviceIdAndIdDeviceType(Long deviceId, String deviceType);
 }

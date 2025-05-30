@@ -32,9 +32,12 @@ public class TriggerService {
     /*트리거에 기기 추가(활성화) */
     public void activateDevice(ActivateDeviceDTO request) {
         TriggerId triggerId = createTriggerId(request);
+        //트리거 디바이스 조회
+        TriggerDevice triggerDevice = triggerDeviceRepository.findById(request.getTriggerDeviceId()).orElseThrow(() -> new RuntimeException("TriggerDevice not found"));
 
         Trigger trigger = new Trigger();
         trigger.setId(triggerId);
+        trigger.setTriggerDevice(triggerDevice);
 
         triggerRepository.save(trigger);
 
