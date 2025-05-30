@@ -13,7 +13,8 @@ import java.util.List;
 public interface TriggerRepository extends JpaRepository<Trigger, TriggerId> {
     List<Trigger> findByIdTriggerDeviceId(Long TriggerId);
 
-    @Query("SELECT t.door.id FROM Trigger t WHERE t.id.deviceType = :deviceType AND t.id.deviceId = :deviceId")
-    List<Long> findDoorIdsByDeviceTypeAndDeviceId(@Param("deviceType") String deviceType,
+    @Query("SELECT t.id.triggerDeviceId FROM Trigger t WHERE t.id.deviceType = :deviceType AND t.id.deviceId = :deviceId")
+    List<Long> findTriggerDeviceIdsByDeviceTypeAndDeviceId(@Param("deviceType") String deviceType,
                                                   @Param("deviceId") Long deviceId);
+
 }

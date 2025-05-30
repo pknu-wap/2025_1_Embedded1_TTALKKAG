@@ -25,8 +25,6 @@ public class MqttController {
         this.buttonRepository = buttonRepository;
     }
     /*어플 실행 시, 새로운 기기 등록 요청 토픽 지속적 구독*/
-    /*TODO: 기기가 등록이 되면 자동으로 기기 목록 페이지에 새로운 기기 추가되도록
-    *  (하려면 SSE나 프론트-백 간에 MQTT 통신 필요함)*/
     @PostMapping("/new-device")
     public ResponseEntity<String> registerDevice() {
        try {

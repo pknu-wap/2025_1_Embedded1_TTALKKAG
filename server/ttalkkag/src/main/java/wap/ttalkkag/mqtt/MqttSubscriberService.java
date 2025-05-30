@@ -2,10 +2,8 @@ package wap.ttalkkag.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import org.eclipse.paho.client.mqttv3.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.*;
 import wap.ttalkkag.repository.*;
@@ -24,18 +22,18 @@ public class MqttSubscriberService implements MqttCallback {
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
     private final UserRepository userRepository;
-    private final DoorRepository doorRepository;
+    private final TriggerDeviceRepository triggerDeviceRepository;
     private final TriggerRepository triggerRepository;
 
     @Autowired
     public MqttSubscriberService(MqttService mqttService, ButtonRepository buttonRepository,
                                  DialRepository dialRepository, UserRepository userRepository,
-                                 DoorRepository doorRepository, TriggerRepository triggerRepository) {
+                                 TriggerDeviceRepository triggerDeviceRepository, TriggerRepository triggerRepository) {
         this.mqttService = mqttService;
         this.buttonRepository = buttonRepository;
         this.dialRepository = dialRepository;
         this.userRepository = userRepository;
-        this.doorRepository = doorRepository;
+        this.triggerDeviceRepository = triggerDeviceRepository;
         this.triggerRepository = triggerRepository;
     }
 
@@ -60,18 +58,12 @@ public class MqttSubscriberService implements MqttCallback {
                     System.out.println(deviceId);
                     /*이미 DB에 있는 경우, 해당 기기가 속한 트리거 목록을 반환*/
                     if (deviceId != 0) {
-                        /*device가 속한 트리거 id 목록
-                        * TODO: 트리거 종류가 늘어나면 트리거 타입도 고려해야함*/
-                        List<Long> triggerIds = triggerRepository.findDoorIdsByDeviceTypeAndDeviceId(type, deviceId);
-                        System.out.println("Trigger IDs: " + triggerIds);
+                        /*device가 속한 트리거 id 목록*/
+                        List<Long> triggerDeviceIds = triggerRepository.findTriggerDeviceIdsByDeviceTypeAndDeviceId(type, deviceId);
                         /*위 id 목록으로 트리거 client_id 목록 찾음*/
-                        List<String> triggerClientIds = doorRepository.findClientIdsByIds(triggerIds);
-                        System.out.println("Trigger된 Door IDs로 검색한 clientId 목록: " + triggerClientIds);
-                        /*client_type 목록 구성
-                        * 현재는 door_sensor만 대입*/
-                        List<String> clientTypes = triggerClientIds.stream()
-                                .map(id -> "door_sensor")
-                                .toList();
+                        List<String> triggerClientIds = triggerDeviceRepository.findClientIdsByIds(triggerDeviceIds);
+                        /*client_type 목록 구성*/
+                        List<String> clientTypes = triggerDeviceRepository.findTriggerTypesByIds(triggerDeviceIds);
                         /*JSON 구성*/
                         Map<String, List<String>> payloadMap = new HashMap<>();
                         payloadMap.put("clientType", clientTypes);
@@ -128,16 +120,31 @@ public class MqttSubscriberService implements MqttCallback {
                 return 0L;
             }
             case "door_sensor" -> {
-                if (doorRepository.existsByClientId(clientId)) {
+                if (triggerDeviceRepository.existsByClientId(clientId)) {
                     System.out.println("이미 등록된 기기입니다.");
                     /*door_sensor은 트리거이므로 device_id 반환 X*/
                     return 0L;
                 }
-                Door door = new Door();
+                TriggerDevice door = new TriggerDevice();
                 door.setName("door sensor");
+                door.setTriggerType("door_sensor");
                 door.setUser(user);
                 door.setClientId(clientId);
-                doorRepository.save(door);
+                triggerDeviceRepository.save(door);
+                return 0L;
+            }
+            case "remote" -> {
+                if (triggerDeviceRepository.existsByClientId(clientId)) {
+                    System.out.println("이미 등록된 기기입니다.");
+                    /*remote은 트리거이므로 device_id 반환 X*/
+                    return 0L;
+                }
+                TriggerDevice remote = new TriggerDevice();
+                remote.setName("remote");
+                remote.setTriggerType("remote");
+                remote.setUser(user);
+                remote.setClientId(clientId);
+                triggerDeviceRepository.save(remote);
                 return 0L;
             }
             default -> throw new IllegalArgumentException("틀린 디바이스 타입");

@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import wap.ttalkkag.domain.Button;
 import wap.ttalkkag.domain.Dial;
-import wap.ttalkkag.domain.Door;
+import wap.ttalkkag.domain.TriggerDevice;
 import wap.ttalkkag.domain.User;
 import wap.ttalkkag.mqtt.MqttPublisherSevice;
 import wap.ttalkkag.repository.ButtonRepository;
 import wap.ttalkkag.repository.DialRepository;
-import wap.ttalkkag.repository.DoorRepository;
+import wap.ttalkkag.repository.TriggerDeviceRepository;
 import wap.ttalkkag.repository.UserRepository;
 
 @Service
@@ -19,7 +19,7 @@ public class DeviceService {
     private final UserRepository userRepository;
     private final ButtonRepository buttonRepository;
     private final DialRepository dialRepository;
-    private final DoorRepository doorRepository;
+    private final TriggerDeviceRepository triggerDeviceRepository;
     private final MqttPublisherSevice mqttPublisherSevice;
 
     /*해당 userId에 연관된 디바이스 목록을 가져옴*/
@@ -43,10 +43,10 @@ public class DeviceService {
                 dial.setName(newName);
                 dialRepository.save(dial);
             }
-            case "door_sensor" -> {
-                Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                door.setName(newName);
-                doorRepository.save(door);
+            case "door_sensor", "remote" -> {
+                TriggerDevice triggerDevice = triggerDeviceRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                triggerDevice.setName(newName);
+                triggerDeviceRepository.save(triggerDevice);
             }
             default -> throw new IllegalArgumentException("Wrong device type");
         }
@@ -67,10 +67,10 @@ public class DeviceService {
                 clientId = dial.getClientId();
                 dialRepository.delete(dial);
             }
-            case "door_sensor" -> {
-                Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                clientId = door.getClientId();
-                doorRepository.delete(door);
+            case "door_sensor", "remote" -> {
+                TriggerDevice triggerDevice = triggerDeviceRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                clientId = triggerDevice.getClientId();
+                triggerDeviceRepository.delete(triggerDevice);
             }
             default -> throw new IllegalArgumentException("Wrong device type");
         }
@@ -95,10 +95,10 @@ public class DeviceService {
                 dial.setMemo(memo);
                 dialRepository.save(dial);
             }
-            case "door_sensor" -> {
-                Door door = doorRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
-                door.setMemo(memo);
-                doorRepository.save(door);
+            case "door_sensor", "remote" -> {
+                TriggerDevice triggerDevice = triggerDeviceRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                triggerDevice.setMemo(memo);
+                triggerDeviceRepository.save(triggerDevice);
             }
         }
     }
@@ -117,7 +117,7 @@ public class DeviceService {
             /*스텝 유닛 변경 내용을 디바이스에 알림*/
             String clientId = dial.getClientId();
             String topic = "server/step/dial_actuator/" + clientId;
-            String payload = String.format("{\"step\": \"%d\"}", newStepUnit);
+            String payload = String.format("{\"step\": %d}", newStepUnit);
             mqttPublisherSevice.publish(topic, payload);
         }
     }

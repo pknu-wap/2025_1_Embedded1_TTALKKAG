@@ -20,4 +20,7 @@ public interface TriggerDeviceRepository extends JpaRepository<TriggerDevice, Lo
 
     @Query("SELECT d.clientId FROM TriggerDevice d WHERE d.id IN :triggerIds")
     List<String> findClientIdsByIds(@Param("triggerIds") List<Long> triggerIds);
+
+    @Query("SELECT td.triggerType FROM TriggerDevice td WHERE td.id IN :ids")
+    List<String> findTriggerTypesByIds(@Param("ids") List<Long> ids);
 }
