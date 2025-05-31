@@ -26,7 +26,7 @@ const TPage = () => {
   const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null); // 삭제 확인용 인덱스
   const [listObjects, setListObjects] = useState([]); // 목록 전체 객체들 (id 포함)
 
-  // ✅ 앱이 켜지면 목록과 디바이스 불러오기
+  // 앱이 켜지면 목록과 디바이스 불러오기 <== 수정해야함
   useEffect(() => {
     const loadListsAndDevices = async () => {
       try {
@@ -129,7 +129,7 @@ const TPage = () => {
     const device = deviceSets[selectedIndex]?.[index];
     const originalName = device.name;
     try {
-      await changeDeviceName(device.deviceId, device.deviceType, newName);  // 여기 device.type → device.deviceType 수정
+      await changeDeviceName(device.deviceId, device.deviceType, newName); 
       const updatedSets = [...deviceSets];
       updatedSets[selectedIndex][index].name = newName;
       setDeviceSets(updatedSets);
@@ -144,7 +144,7 @@ const TPage = () => {
   };
 
   const handleDeleteRequest = (index) => setConfirmDeleteIndex(index);
-
+// 목록 삭제 기능
   const confirmDelete = async () => {
     const indexToDelete = confirmDeleteIndex;
     const newLists = lists.filter((_, i) => i !== indexToDelete);
