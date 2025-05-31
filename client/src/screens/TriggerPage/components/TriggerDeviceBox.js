@@ -7,7 +7,13 @@ const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNam
   const isOn = item.status;
 
   return (
-    <TouchableOpacity onPress={() => onToggle(index)} style={styles.wrapper}>
+    <TouchableOpacity onPress={() => {
+  if (typeof onToggle === 'function') {
+    onToggle(index);
+  } else {
+    console.warn("onToggle is not defined!");
+  }
+}}style={styles.wrapper}>
       <ImageBackground
         source={
           isOn

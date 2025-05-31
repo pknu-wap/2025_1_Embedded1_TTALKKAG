@@ -1,131 +1,173 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  ScrollView, View, TouchableOpacity, FlatList, Text,
+  ScrollView, View, TouchableOpacity, FlatList, Text, Alert,
 } from 'react-native';
 import Background from "./components/Background";
 import { AppText, styles as appTextStyles } from "./components/AppText";
 import { TriggerList } from "./components/TriggerList";
 import { TriggerDeviceBox } from "./components/TriggerDeviceBox";
-
-const initialLists = ['목록1', '목록2', '목록3', '목록4', '목록5'];
-
-const initialDeviceTemplate = [
-  { name: '디바이스 1', status: false },
-  { name: '디바이스 2', status: false },
-  { name: '디바이스 3', status: false },
-  { name: '디바이스 4', status: false },
-  { name: '디바이스 5', status: false },
-  { name: '디바이스 6', status: false },
-  { name: '디바이스 7', status: false },
-  { name: '디바이스 8', status: false },
-];
-
-const generateDeviceSets = () => 
-  initialLists.map(() => initialDeviceTemplate.map(device => ({ ...device })));
+import {
+  fetchTriggerDevices,
+  fetchTriggerLists,
+  activateDeviceBox,
+  deactivateDeviceBox as deactivateDeviceBoxApi,
+  changeDeviceName,
+  changeListName,
+  deleteDevice,
+} from "../../api/triggerApi";
 
 const TPage = () => {
-  const [lists, setLists] = useState(initialLists);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [deviceSets, setDeviceSets] = useState(generateDeviceSets());
-  const [editingListIndex, setEditingListIndex] = useState(null);
-  const [editingDeviceIndex, setEditingDeviceIndex] = useState(null);
+  const [lists, setLists] = useState([]); // 목록 이름들
+  const [selectedIndex, setSelectedIndex] = useState(0); // 현재 선택된 목록 인덱스
+  const [deviceSets, setDeviceSets] = useState([]); // 각 목록별 디바이스 상태
+  const [editingListIndex, setEditingListIndex] = useState(null); // 목록 이름 편집 인덱스
+  const [editingDeviceIndex, setEditingDeviceIndex] = useState(null); // 디바이스 이름 편집 인덱스
+  const [longPressedIndex, setLongPressedIndex] = useState(null); // 목록 꾹 누름 인덱스
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null); // 삭제 확인용 인덱스
+  const [listObjects, setListObjects] = useState([]); // 목록 전체 객체들 (id 포함)
 
-  const handleDeviceToggle = (deviceIndex) => {
-    setDeviceSets(prevSets => {
-      const updatedSets = [...prevSets];
-      const currentList = [...updatedSets[selectedIndex]];
-      currentList[deviceIndex].status = !currentList[deviceIndex].status;
-      updatedSets[selectedIndex] = currentList;
-      return updatedSets;
-    });
+  // ✅ 앱이 켜지면 목록과 디바이스 불러오기
+  useEffect(() => {
+    const loadListsAndDevices = async () => {
+      try {
+        const listData = await fetchTriggerLists();
+        console.log("목록 데이터:", listData);
+        setLists(listData.map(item => item.name));
+        setListObjects(listData);
+
+        const allDeviceSets = await Promise.all(
+          listData.map(async (list) => {
+            const devices = await fetchTriggerDevices(list.id);
+            console.log(`listId ${list.id}의 디바이스들:`, devices);
+            
+            if (!devices || devices.length === 0) {
+              console.warn(` listId ${list.id}는 빈 배열입니다. 더미를 삽입합니다.`);
+              return [
+                {
+                  name: '테스트 디바이스',
+                  deviceId: `${list.id}`,
+                  deviceType: 'dial_actuator',
+                  status: false,
+                },
+              ];
+            }
+
+            return devices.map(device => ({
+              name: device.id.deviceType,         
+              deviceId: device.id.deviceId,        
+              deviceType: device.id.deviceType,   
+              status: device.status ?? false,
+            }));
+          })
+        );
+        console.log("전체 deviceSets:", allDeviceSets);
+        setDeviceSets(allDeviceSets);
+      } catch (error) {
+        console.error("목록 및 디바이스 로딩 실패", error);
+        Alert.alert("오류", "디바이스 로딩에 실패했습니다.");
+      }
+    };
+    loadListsAndDevices();
+  }, []);
+
+  //디바이스 활성화
+  const handleDeviceToggle = async (doorId, deviceId, deviceType) => {
+    try {
+      const numericDeviceId = Number(deviceId);
+      console.log("보내는 값 확인:", {
+        doorId,
+        deviceId: numericDeviceId,
+        deviceType
+      });
+
+      const response = await activateDeviceBox(doorId, numericDeviceId, deviceType);
+
+      if (response.status === 200) {
+        Alert.alert("성공", "디바이스가 활성화되었습니다");
+      } else {
+        Alert.alert("실패", "디바이스 활성화 요청 실패");
+      }
+    } catch (error) {
+      console.error("디바이스 활성화 오류:", error.response?.data || error.message);
+      Alert.alert("오류", "디바이스 활성화 중 문제가 발생했습니다.");
+    }
   };
 
-  const handleListNameChange = (newName, index) => {
-    const updated = [...lists];
-    updated[index] = newName;
-    setLists(updated);
-    setEditingListIndex(null);
+  //디바이스 비활성화
+  const deactivateDeviceBox = async (doorId, deviceId, deviceType) => {
+    try {
+      const payload = { doorId, deviceId, deviceType };
+      const response = await deactivateDeviceBoxApi(payload);
+      if (response.status === 200) {
+        Alert.alert("성공", "디바이스가 비활성화되었습니다.");
+      }
+    } catch (error) {
+      console.error("디바이스 비활성화 실패:", error);
+      Alert.alert("오류", "디바이스 비활성화 요청 실패");
+    }
   };
 
-  const handleDeviceNameChange = (newName, index) => {
-    setDeviceSets(prevSets => {
-      const updatedSets = [...prevSets];
-      const currentList = [...updatedSets[selectedIndex]];
-      currentList[index].name = newName;
-      updatedSets[selectedIndex] = currentList;
-      return updatedSets;
-    });
-    setEditingDeviceIndex(null);
+  const handleListNameChange = async (newName, index) => {
+    const originalName = lists[index];
+    const listId = listObjects[index]?.id;
+    try {
+      await changeListName(listId, "button", newName);
+      const updated = [...lists];
+      updated[index] = newName;
+      setLists(updated);
+      setEditingListIndex(null);
+    } catch (err) {
+      console.error("목록 이름 변경 실패:", err);
+      const updated = [...lists];
+      updated[index] = originalName;
+      setLists(updated);
+      setEditingListIndex(null);
+    }
   };
 
-  const handleDeleteList = (indexToDelete) => {
+  const handleDeviceNameChange = async (newName, index) => {
+    const device = deviceSets[selectedIndex]?.[index];
+    const originalName = device.name;
+    try {
+      await changeDeviceName(device.deviceId, device.deviceType, newName);  // 여기 device.type → device.deviceType 수정
+      const updatedSets = [...deviceSets];
+      updatedSets[selectedIndex][index].name = newName;
+      setDeviceSets(updatedSets);
+      setEditingDeviceIndex(null);
+    } catch (error) {
+      console.error("디바이스 이름 변경 실패:", error);
+      const updatedSets = [...deviceSets];
+      updatedSets[selectedIndex][index].name = originalName;
+      setDeviceSets(updatedSets);
+      setEditingDeviceIndex(null);
+    }
+  };
+
+  const handleDeleteRequest = (index) => setConfirmDeleteIndex(index);
+
+  const confirmDelete = async () => {
+    const indexToDelete = confirmDeleteIndex;
     const newLists = lists.filter((_, i) => i !== indexToDelete);
     const newDeviceSets = deviceSets.filter((_, i) => i !== indexToDelete);
     setLists(newLists);
     setDeviceSets(newDeviceSets);
+    setSelectedIndex(prev => (prev === indexToDelete ? 0 : prev > indexToDelete ? prev - 1 : prev));
+    setConfirmDeleteIndex(null);
 
-    setSelectedIndex(prev => {
-      if (prev === indexToDelete) return 0;
-      if (prev > indexToDelete) return prev - 1;
-      return prev;
-    });
+    try {
+      const listId = listObjects[indexToDelete]?.id;
+      if (listId) {
+        await deleteDevice({ type: "button", deviceId: listId });
+      }
+    } catch (err) {
+      console.error("목록 삭제 실패:", err);
+    }
   };
 
-  const [longPressedIndex, setLongPressedIndex] = useState(null);
-  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);  // 삭제 확인용
-  const [recentlyDeleted, setRecentlyDeleted] = useState(null);        // 되돌리기용
-
- // 삭제 요청이 들어오면 index 저장만 해둠
-  const handleDeleteRequest = (index) => {
-    setConfirmDeleteIndex(index);
-};
-
-  const confirmDelete = () => {
-  const indexToDelete = confirmDeleteIndex;
-  const deletedList = lists[indexToDelete];
-  const deletedDevices = deviceSets[indexToDelete];
-
-  setRecentlyDeleted({
-    list: deletedList,
-    devices: deletedDevices,
-    index: indexToDelete,
-  });
-
-  // 삭제 처리
-  const newLists = lists.filter((_, i) => i !== indexToDelete);
-  const newDeviceSets = deviceSets.filter((_, i) => i !== indexToDelete);
-  setLists(newLists);
-  setDeviceSets(newDeviceSets);
-
-  setSelectedIndex(prev => {
-    if (prev === indexToDelete) return 0;
-    if (prev > indexToDelete) return prev - 1;
-    return prev;
-  });
-
-  setConfirmDeleteIndex(null); // 창 닫기
-};
-
-const cancelDelete = () => {
-  setConfirmDeleteIndex(null); 
-  setLongPressedIndex(null);
-};
-
-const handleUndo = () => { //되돌리기기
-  if (!recentlyDeleted) return;
-
-  const { list, devices, index } = recentlyDeleted;
-  const newLists = [...lists];
-  const newDeviceSets = [...deviceSets];
-
-  newLists.splice(index, 0, list);
-  newDeviceSets.splice(index, 0, devices);
-
-  setLists(newLists);
-  setDeviceSets(newDeviceSets);
-  setRecentlyDeleted(null);
-};
-
+  const cancelDelete = () => {
+    setConfirmDeleteIndex(null);
+    setLongPressedIndex(null);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -133,22 +175,13 @@ const handleUndo = () => { //되돌리기기
       <AppText style={appTextStyles.text1}>TTALKKAG</AppText>
       <AppText style={appTextStyles.text3}>Trigger</AppText>
       <AppText style={appTextStyles.text2}>트리거 페이지</AppText>
-   
-      <View style={{ height: 60, marginTop: 55 }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 35 }}
-        >
+
+      {/* 목록 */}
+      <View style={{ height: 60, marginTop: 20 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 35 }}>
           {lists.map((item, index) => (
-            <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  setSelectedIndex(index);
-                }}
-                activeOpacity={1}
-              >
-                <TriggerList
+            <TouchableOpacity key={index} onPress={() => setSelectedIndex(index)} activeOpacity={1}>
+              <TriggerList
                 text={item}
                 isSelected={selectedIndex === index}
                 isEditing={editingListIndex === index}
@@ -158,8 +191,7 @@ const handleUndo = () => { //되돌리기기
                   updated[index] = newName;
                   setLists(updated);
                 }}
-                onSubmit={(finalName) => handleListNameChange(finalName.slice(0, 7), index)}
-                //onDeleteRequest={() => handleDeleteList(index)}
+                onSubmit={(finalName) => handleListNameChange(finalName.slice(0, 10), index)}
                 onLongPress={() => setLongPressedIndex(index)}
                 showDelete={longPressedIndex === index}
                 onDeleteRequest={() => handleDeleteRequest(index)}
@@ -168,54 +200,52 @@ const handleUndo = () => { //되돌리기기
           ))}
         </ScrollView>
       </View>
-       {recentlyDeleted && (
-  <TouchableOpacity onPress={handleUndo} style={{ alignSelf: 'center', marginTop: 3 }}>
-    <Text style={{ color: 'fff' ,fontWeight: 'bold'}}>되돌리기</Text>
-  </TouchableOpacity>
-    )}
+
+      {/* 삭제 확인 창 */}
+      {confirmDeleteIndex !== null && (
+        <View style={{ position: 'absolute', top: '40%', left: '20%', right: '20%', backgroundColor: '#fff', padding: 20, borderRadius: 10, elevation: 10 }}>
+          <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>정말 삭제하시겠습니까?</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+            <TouchableOpacity onPress={confirmDelete}><Text style={{ fontSize: 18, color: 'red' }}>O</Text></TouchableOpacity>
+            <TouchableOpacity onPress={cancelDelete}><Text style={{ fontSize: 18 }}>X</Text></TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* 디바이스 박스 */}
       <View style={{ flex: 1 }}>
+        <Text style={{ textAlign: 'center', marginTop: 5, color: 'gray' }}>
+          디바이스 수: {deviceSets[selectedIndex]?.length || 0}
+        </Text>
         <FlatList
-          data={deviceSets[selectedIndex]}
+          data={deviceSets.length > 0 ? deviceSets[selectedIndex] || [] : []}
           renderItem={({ item, index }) => (
             <TriggerDeviceBox
               item={item}
               index={index}
-              onToggle={handleDeviceToggle}
+              onToggle={() => {
+                const doorId = listObjects[selectedIndex]?.id;
+                if (!doorId) return;
+                item.status
+                  ? deactivateDeviceBox(doorId, item.deviceId, item.deviceType)   // 여기 type → deviceType 수정
+                  : handleDeviceToggle(doorId, item.deviceId, item.deviceType);  // 여기 type → deviceType 수정
+              }}
               isEditing={editingDeviceIndex === index}
               onEditStart={() => setEditingDeviceIndex(index)}
               onNameChange={(newName) => {
-                setDeviceSets(prevSets => {
-                  const updatedSets = [...prevSets];
-                  const currentList = [...updatedSets[selectedIndex]];
-                  currentList[index].name = newName;
-                  updatedSets[selectedIndex] = currentList;
-                  return updatedSets;
-                });
+                const updatedSets = [...deviceSets];
+                updatedSets[selectedIndex][index].name = newName;
+                setDeviceSets(updatedSets);
               }}
-              onSubmit={(finalName) => handleDeviceNameChange(finalName.slice(0, 7), index)}
+              onSubmit={(finalName) => handleDeviceNameChange(finalName.slice(0, 10), index)}
             />
           )}
-          keyExtractor={(_, i) => i.toString()}
+          keyExtractor={(item) => item.deviceId.toString()}
           numColumns={2}
           contentContainerStyle={{ padding: 10 }}
           showsVerticalScrollIndicator={false}
         />
       </View>
-      {confirmDeleteIndex !== null && (
-  <View style={{ position: 'absolute', top: '40%', left: '20%', right: '20%', backgroundColor: '#fff', padding: 20, borderRadius: 10, elevation: 10 }}>
-    <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>정말 삭제할까요?</Text>
-    <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-      <TouchableOpacity onPress={confirmDelete}>
-        <Text style={{ fontSize: 18, color: 'red' }}>O</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={cancelDelete}>
-        <Text style={{ fontSize: 18 }}>X</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
-
-
     </View>
   );
 };
