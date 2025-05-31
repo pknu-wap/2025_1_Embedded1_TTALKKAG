@@ -21,7 +21,13 @@ const TriggerList = ({
   onDeleteRequest,
 }) => {
   return (
-    <View style={[styles.listItem, isSelected && styles.selected]}>
+    <View
+  style={[
+    styles.listItem,
+    isSelected && styles.selected,
+    showDelete && { backgroundColor: '#C34747' },  // showDelete가 true면 빨간색 배경 추가
+  ]}
+>
       <View style={styles.textWrapper}>
         {isEditing ? (
           <TextInput
@@ -43,7 +49,7 @@ const TriggerList = ({
             <Text
               style={[
                 styles.text,
-                { color: showDelete ? '#ccc' : isSelected ? '#000' : '#888' },
+                { color: showDelete ? 'transparent' : isSelected ? '#000' : '#888' },
               ]}
             >
               {text}
@@ -60,11 +66,14 @@ const TriggerList = ({
       </View>
 
       <TouchableOpacity onPress={onEditPress}>
-        <Image
-          source={require('../../../../assets/pencil_icon.png')}
-          style={styles.editIcon}
-        />
-      </TouchableOpacity>
+  <Image
+    source={require('../../../../assets/pencil_icon.png')}
+    style={[
+      styles.editIcon,
+      { opacity: showDelete ? 0 : 1 }  // showDelete가 true면 투명하게
+    ]}
+  />
+</TouchableOpacity>
     </View>
   );
 };
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
   },
   deleteX: {
     fontSize: 23,
-    color: '#5BB2CC',
+    color: 'black',
     //fontWeight: 'bold',
   },
 });

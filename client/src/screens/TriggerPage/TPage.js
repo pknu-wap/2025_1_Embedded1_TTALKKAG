@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ScrollView, View, TouchableOpacity, FlatList, Text, Alert,
+  ScrollView,
+  View,
+  TouchableOpacity,
+  FlatList,
+  Text,
+  Alert,
+  Pressable,
 } from 'react-native';
 import Background from "./components/Background";
 import { AppText, styles as appTextStyles } from "./components/AppText";
@@ -17,50 +23,41 @@ import {
 } from "../../api/triggerApi";
 
 const TPage = () => {
-  const [lists, setLists] = useState([]); // 목록 이름들
-  const [selectedIndex, setSelectedIndex] = useState(0); // 현재 선택된 목록 인덱스
-  const [deviceSets, setDeviceSets] = useState([]); // 각 목록별 디바이스 상태
-  const [editingListIndex, setEditingListIndex] = useState(null); // 목록 이름 편집 인덱스
-  const [editingDeviceIndex, setEditingDeviceIndex] = useState(null); // 디바이스 이름 편집 인덱스
-  const [longPressedIndex, setLongPressedIndex] = useState(null); // 목록 꾹 누름 인덱스
-  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null); // 삭제 확인용 인덱스
-  const [listObjects, setListObjects] = useState([]); // 목록 전체 객체들 (id 포함)
+  const [lists, setLists] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [deviceSets, setDeviceSets] = useState([]);
+  const [editingListIndex, setEditingListIndex] = useState(null);
+  const [editingDeviceIndex, setEditingDeviceIndex] = useState(null);
+  const [longPressedIndex, setLongPressedIndex] = useState(null);
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
+  const [listObjects, setListObjects] = useState([]);
 
-  // 앱이 켜지면 목록과 디바이스 불러오기 <== 수정해야함
   useEffect(() => {
     const loadListsAndDevices = async () => {
       try {
         const listData = await fetchTriggerLists();
-        console.log("목록 데이터:", listData);
         setLists(listData.map(item => item.name));
         setListObjects(listData);
 
         const allDeviceSets = await Promise.all(
           listData.map(async (list) => {
             const devices = await fetchTriggerDevices(list.id);
-            console.log(`listId ${list.id}의 디바이스들:`, devices);
-            
             if (!devices || devices.length === 0) {
-              console.warn(` listId ${list.id}는 빈 배열입니다. 더미를 삽입합니다.`);
-              return [
-                {
-                  name: '테스트 디바이스',
-                  deviceId: `${list.id}`,
-                  deviceType: 'dial_actuator',
-                  status: false,
-                },
-              ];
+              return [{
+                name: '테스트 디바이스',
+                deviceId: `${list.id}`,
+                deviceType: 'dial_actuator',
+                status: false,
+              }];
             }
-
             return devices.map(device => ({
-              name: device.id.deviceType,         
-              deviceId: device.id.deviceId,        
-              deviceType: device.id.deviceType,   
+              name: device.id.deviceType,
+              deviceId: device.id.deviceId,
+              deviceType: device.id.deviceType,
               status: device.status ?? false,
             }));
           })
         );
-        console.log("전체 deviceSets:", allDeviceSets);
         setDeviceSets(allDeviceSets);
       } catch (error) {
         console.error("목록 및 디바이스 로딩 실패", error);
@@ -70,18 +67,9 @@ const TPage = () => {
     loadListsAndDevices();
   }, []);
 
-  //디바이스 활성화
   const handleDeviceToggle = async (doorId, deviceId, deviceType) => {
     try {
-      const numericDeviceId = Number(deviceId);
-      console.log("보내는 값 확인:", {
-        doorId,
-        deviceId: numericDeviceId,
-        deviceType
-      });
-
-      const response = await activateDeviceBox(doorId, numericDeviceId, deviceType);
-
+      const response = await activateDeviceBox(doorId, Number(deviceId), deviceType);
       if (response.status === 200) {
         Alert.alert("성공", "디바이스가 활성화되었습니다");
       } else {
@@ -93,7 +81,6 @@ const TPage = () => {
     }
   };
 
-  //디바이스 비활성화
   const deactivateDeviceBox = async (doorId, deviceId, deviceType) => {
     try {
       const payload = { doorId, deviceId, deviceType };
@@ -129,7 +116,7 @@ const TPage = () => {
     const device = deviceSets[selectedIndex]?.[index];
     const originalName = device.name;
     try {
-      await changeDeviceName(device.deviceId, device.deviceType, newName); 
+      await changeDeviceName(device.deviceId, device.deviceType, newName);
       const updatedSets = [...deviceSets];
       updatedSets[selectedIndex][index].name = newName;
       setDeviceSets(updatedSets);
@@ -144,7 +131,7 @@ const TPage = () => {
   };
 
   const handleDeleteRequest = (index) => setConfirmDeleteIndex(index);
-// 목록 삭제 기능
+
   const confirmDelete = async () => {
     const indexToDelete = confirmDeleteIndex;
     const newLists = lists.filter((_, i) => i !== indexToDelete);
@@ -153,6 +140,7 @@ const TPage = () => {
     setDeviceSets(newDeviceSets);
     setSelectedIndex(prev => (prev === indexToDelete ? 0 : prev > indexToDelete ? prev - 1 : prev));
     setConfirmDeleteIndex(null);
+    setLongPressedIndex(null);
 
     try {
       const listId = listObjects[indexToDelete]?.id;
@@ -170,7 +158,7 @@ const TPage = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <Pressable onPress={() => setLongPressedIndex(null)} style={{ flex: 1 }}>
       <Background />
       <AppText style={appTextStyles.text1}>TTALKKAG</AppText>
       <AppText style={appTextStyles.text3}>Trigger</AppText>
@@ -178,9 +166,20 @@ const TPage = () => {
 
       {/* 목록 */}
       <View style={{ height: 60, marginTop: 20 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 35 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 35 }}
+        >
           {lists.map((item, index) => (
-            <TouchableOpacity key={index} onPress={() => setSelectedIndex(index)} activeOpacity={1}>
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
+                setSelectedIndex(index);
+                setLongPressedIndex(null); // 목록 누르면 삭제모드 해제
+              }}
+              activeOpacity={1}
+            >
               <TriggerList
                 text={item}
                 isSelected={selectedIndex === index}
@@ -201,16 +200,51 @@ const TPage = () => {
         </ScrollView>
       </View>
 
-      {/* 삭제 확인 창 */}
-      {confirmDeleteIndex !== null && (
-        <View style={{ position: 'absolute', top: '40%', left: '20%', right: '20%', backgroundColor: '#fff', padding: 20, borderRadius: 10, elevation: 10 }}>
-          <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>정말 삭제하시겠습니까?</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity onPress={confirmDelete}><Text style={{ fontSize: 18, color: 'red' }}>O</Text></TouchableOpacity>
-            <TouchableOpacity onPress={cancelDelete}><Text style={{ fontSize: 18 }}>X</Text></TouchableOpacity>
-          </View>
-        </View>
-      )}
+     {confirmDeleteIndex !== null && (
+  <View
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.3)', // 반투명 검정 배경
+      zIndex: 999,
+    }}
+  >
+    {/* 배경을 누르면 삭제창 닫기 */}
+    <TouchableOpacity
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      onPress={cancelDelete}
+    />
+    
+    {/* 삭제 확인 창 */}
+    <View
+      style={{
+        width: '60%',
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        elevation: 10,
+        zIndex: 1000,
+      }}
+    >
+      <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>
+        정말 삭제하시겠습니까?
+      </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        <TouchableOpacity onPress={confirmDelete}>
+          <Text style={{ fontSize: 18, color: 'red' }}>O</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={cancelDelete}>
+          <Text style={{ fontSize: 18 }}>X</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+)}
 
       {/* 디바이스 박스 */}
       <View style={{ flex: 1 }}>
@@ -227,8 +261,8 @@ const TPage = () => {
                 const doorId = listObjects[selectedIndex]?.id;
                 if (!doorId) return;
                 item.status
-                  ? deactivateDeviceBox(doorId, item.deviceId, item.deviceType)   // 여기 type → deviceType 수정
-                  : handleDeviceToggle(doorId, item.deviceId, item.deviceType);  // 여기 type → deviceType 수정
+                  ? deactivateDeviceBox(doorId, item.deviceId, item.deviceType)
+                  : handleDeviceToggle(doorId, item.deviceId, item.deviceType);
               }}
               isEditing={editingDeviceIndex === index}
               onEditStart={() => setEditingDeviceIndex(index)}
@@ -246,7 +280,7 @@ const TPage = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
-    </View>
+    </Pressable>
   );
 };
 
