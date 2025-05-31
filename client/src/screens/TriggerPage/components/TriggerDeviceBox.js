@@ -1,19 +1,36 @@
 import React from 'react';
 import {
-  Text, TouchableOpacity, Image, ImageBackground, StyleSheet, TextInput
+  Text,
+  TouchableOpacity,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  TextInput,
+  View,
 } from 'react-native';
 
 const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNameChange, onSubmit }) => {
   const isOn = item.status;
 
+  // 타입별 아이콘 설정
+  let iconSource;
+  if (item.type === "dial_actuator") {
+    iconSource = require('../../../../assets/dial_icon.png');
+  } else if (item.type === "button_clicker") {
+    iconSource = require('../../../../assets/button_icon.png');
+  } 
+  
   return (
-    <TouchableOpacity onPress={() => {
-  if (typeof onToggle === 'function') {
-    onToggle(index);
-  } else {
-    console.warn("onToggle is not defined!");
-  }
-}}style={styles.wrapper}>
+    <TouchableOpacity
+      onPress={() => {
+        if (typeof onToggle === 'function') {
+          onToggle(index);
+        } else {
+          console.warn("onToggle is not defined!");
+        }
+      }}
+      style={styles.wrapper}
+    >
       <ImageBackground
         source={
           isOn
@@ -23,10 +40,15 @@ const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNam
         style={styles.box}
         imageStyle={{ borderRadius: 20 }}
       >
-        <Image
-          source={require('../../../../assets/device_icon.png')}
-          style={styles.icon}
-        />
+        {/* 디바이스 아이콘 영역 */}
+        <View style={styles.headerRow}>
+          <Image
+            source={iconSource}
+            style={styles.deviceIcon}
+            resizeMode="contain"
+          />
+        </View>
+
         <TouchableOpacity onPress={onEditStart}>
           {isEditing ? (
             <TextInput
@@ -67,12 +89,14 @@ const styles = StyleSheet.create({
     padding: 10,
     position: 'relative',
   },
-  icon: {
-    width: 37,
-    height: 30,
-    marginBottom: 10,
+  headerRow: {
     marginTop: 25,
     marginLeft: 10,
+    marginBottom: 10,
+  },
+  deviceIcon: {
+    width: 37,
+    height: 30,
   },
   name: {
     fontWeight: 'bold',

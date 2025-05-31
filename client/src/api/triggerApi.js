@@ -72,7 +72,7 @@ export const deactivateDeviceBox = async (payload) => {
   });
 };
 
-//디바이스 이름 변경 (PATCH)
+//목록,디바이스 이름 변경 (PATCH)
 export const changeDeviceName = async (deviceId, type, newName) => {
   const url = `${BASE_URL}/device/change-name`;
   try {
@@ -93,26 +93,6 @@ export const changeDeviceName = async (deviceId, type, newName) => {
   }
 };
 
-//목록 이름변경 ( PATCH )
-export const changeListName = async (deviceId, type, newName) => {
-  const url = `${BASE_URL}/device/change-name`;
-  try {
-    const response = await axios.patch(url, {
-      deviceId,
-      type,
-      newName
-    }, {
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('목록 이름 변경 실패:', error);
-    throw error;
-  }
-};
 
 //목록 삭제 (DELETE)
 export const deleteDevice = async (payload) => {
