@@ -64,19 +64,30 @@ public class MqttSubscriberService implements MqttCallback {
                         List<String> triggerClientIds = triggerDeviceRepository.findClientIdsByIds(triggerDeviceIds);
                         /*client_type 목록 구성*/
                         List<String> clientTypes = triggerDeviceRepository.findTriggerTypesByIds(triggerDeviceIds);
-                        /*JSON 구성*/
+                        /*트리거 목록 JSON 구성*/
                         Map<String, List<String>> payloadMap = new HashMap<>();
                         payloadMap.put("clientType", clientTypes);
                         payloadMap.put("clientId", triggerClientIds);
 
                         String responseTopic = "server/triggers/" + type + "/" + clientId;
                         String responsePayload = objectMapper.writeValueAsString(payloadMap);
-                        System.out.println(responseTopic);
-                        System.out.println(responsePayload);
                         MqttMessage responseMessage = new MqttMessage(responsePayload.getBytes(StandardCharsets.UTF_8));
                         responseMessage.setQos(1);
 
                         client.publish(responseTopic, responseMessage);
+                        /*요청하는 기기가 다이얼일 땨, stepUnit, currentStep 발행*/
+                        if (type.equals("dial_actuator")) {
+                            Dial dial = dialRepository.findById(deviceId).orElseThrow(() -> new RuntimeException("Device not found"));
+                            Map<String, Integer> secPayloadMap = new HashMap<>();
+                            secPayloadMap.put("stepUnit", dial.getStepUnit());
+                            secPayloadMap.put("currentStep", dial.getStep());
+                            String secResponseTopic = "server/step/" + type + "/" + clientId;
+                            String secResponsePayload = objectMapper.writeValueAsString(secPayloadMap);
+                            MqttMessage secResponseMessage = new MqttMessage(secResponsePayload.getBytes(StandardCharsets.UTF_8));
+                            responseMessage.setQos(1);
+
+                            client.publish(secResponseTopic, secResponseMessage);
+                        }
                     }
                 });
             } else {
