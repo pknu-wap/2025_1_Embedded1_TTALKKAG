@@ -25,7 +25,7 @@ const TriggerList = ({
   style={[
     styles.listItem,
     isSelected && styles.selected,
-    showDelete && { backgroundColor: '#C34747' },  // showDelete가 true면 빨간색 배경 추가
+    showDelete && { backgroundColor: '#ff4d4d' },  // showDelete가 true면 빨간색 배경 추가
   ]}
 >
       <View style={styles.textWrapper}>
