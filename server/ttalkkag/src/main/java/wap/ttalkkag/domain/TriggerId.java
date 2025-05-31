@@ -12,8 +12,8 @@ import java.util.Objects;
 @Getter
 @Setter
 public class TriggerId implements Serializable {
-    @Column(name = "door_id")
-    private Long doorId;
+    @Column(name = "trigger_device_id")
+    private Long triggerDeviceId;
 
     @Column(name = "device_id")
     private Long deviceId;
@@ -23,8 +23,8 @@ public class TriggerId implements Serializable {
 
     public TriggerId() {}
 
-    public TriggerId(Long doorId, Long deviceId, String deviceType) {
-        this.doorId = doorId;
+    public TriggerId(Long triggerDeviceId, Long deviceId, String deviceType) {
+        this.triggerDeviceId = triggerDeviceId;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
     }
@@ -34,13 +34,13 @@ public class TriggerId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TriggerId that = (TriggerId) o;
-        return Objects.equals(doorId, that.doorId) &&
+        return Objects.equals(triggerDeviceId, that.triggerDeviceId) &&
                 Objects.equals(deviceId, that.deviceId) &&
                 Objects.equals(deviceType, that.deviceType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(doorId, deviceId, deviceType);
+        return Objects.hash(triggerDeviceId, deviceId, deviceType);
     }
 }

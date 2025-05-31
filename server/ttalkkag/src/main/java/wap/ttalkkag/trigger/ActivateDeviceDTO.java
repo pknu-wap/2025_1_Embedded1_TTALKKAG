@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ActivateDeviceDTO {
-    private Long doorId;
+    private Long triggerDeviceId;
     private Long deviceId;
     private String deviceType;
 }
