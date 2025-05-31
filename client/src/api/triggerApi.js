@@ -3,6 +3,17 @@ import Config from 'react-native-config';
 
 const BASE_URL = Config.API_URL;
 
+//기기 목록 불러오기
+export const fetchDeviceList = async () => {
+  const url = `${BASE_URL}/device/list`;
+  return axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  });
+};
+
 //트리거 목록 불러오기 (GET)
 export const fetchTriggerLists = async () => {
   try {
@@ -19,7 +30,7 @@ export const fetchTriggerLists = async () => {
   }
 };
 
-//디바이스 목록 불러오기 (GET)
+//트리거에 속한 디바이스 목록 불러오기 (GET)
 export const fetchTriggerDevices = async (doorId) => {
   try {
     const response = await axios.get(`${BASE_URL}/trigger/${doorId}/active-devices`, {
@@ -44,7 +55,7 @@ export const activateDeviceBox = async (doorId, deviceId, deviceType) => {
     deviceType
   }, {
     headers: {
-      "Content-type": "application/json",
+      "Content-Type": "application/json",
       "Accept": "application/json"
     }
   });
@@ -66,8 +77,8 @@ export const changeDeviceName = async (deviceId, type, newName) => {
   const url = `${BASE_URL}/device/change-name`;
   try {
     const response = await axios.patch(url, {
-      deviceId,
       type,
+      deviceId,
       newName
     }, {
       headers: {
@@ -117,5 +128,17 @@ export const deleteDevice = async (payload) => {
   } catch (error) {
     console.error("목록 삭제 실패:", error);
     throw error;
+  }
+};
+
+export const TriggerDevices = async (doorId) => {
+  const url = `${BASE_URL}/trigger/devices?doorId=${doorId}`;
+  try {
+    const response = await axios.get(url);
+    console.log(`[API] listId ${doorId} 응답:`, response.data); // ✅ 응답 로그 출력
+    return response.data;
+  } catch (error) {
+    console.error(`[API] listId ${doorId} 디바이스 요청 실패:`, error);
+    return [];
   }
 };
