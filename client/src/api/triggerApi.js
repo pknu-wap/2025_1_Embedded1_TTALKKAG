@@ -47,10 +47,10 @@ export const fetchTriggerDevices = async (doorId) => {
 };
 
 //디바이스 박스 활성화 (POST)
-export const activateDeviceBox = async (doorId, deviceId, deviceType) => {
+export const activateDeviceBox = async (triggerDeviceId, deviceId, deviceType) => {
   const url = `${BASE_URL}/trigger/activate`;
   return axios.post(url, {
-    doorId,
+    triggerDeviceId,
     deviceId,
     deviceType
   }, {
