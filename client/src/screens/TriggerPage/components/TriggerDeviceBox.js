@@ -56,6 +56,7 @@ const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNam
               autoCorrect={false}
               autoComplete="off"
               importantForAutofill="no"
+              onBlur={() => onSubmit(item.name)}
             />
           ) : (
             <Text style={styles.name}>{item.name}</Text>

@@ -43,6 +43,7 @@ const TriggerList = ({
             autoCorrect={false}
             autoComplete="off"
             importantForAutofill="no"
+            onBlur={() => onSubmit(text)}
           />
         ) : (
           <Pressable onLongPress={onLongPress}>
