@@ -386,7 +386,11 @@ const cancelDelete = () => {
           )}
           keyExtractor={(item) => item.deviceId.toString()}
           numColumns={2}
-          contentContainerStyle={{ padding: 10 }}
+          contentContainerStyle={{
+          paddingBottom: 50, 
+          paddingRight: 20, 
+          paddingLeft: 10,   
+        }}
           showsVerticalScrollIndicator={false}
         />
       </View>

@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     width: 175,
     height: 200,
     aspectRatio: 1,
-    marginHorizontal: 10,
+   marginRight: 20,   
     marginVertical: -6,
   },
   box: {
