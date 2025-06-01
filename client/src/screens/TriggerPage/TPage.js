@@ -281,7 +281,14 @@ const cancelDelete = () => {
 
 
   return (
-    <Pressable onPress={() => setLongPressedIndex(null)} style={{ flex: 1 }}>
+    <Pressable
+  onPress={() => {
+    setLongPressedIndex(null);
+    setEditingListIndex(null); // 목록 이름 편집 종료
+    setEditingDeviceIndex(null); // 디바이스 이름 편집 종료
+  }}
+  style={{ flex: 1 }}
+>
       <Background />
       <AppText style={appTextStyles.text1}>TTALKKAG</AppText>
       <AppText style={appTextStyles.text3}>Trigger</AppText>
@@ -314,7 +321,10 @@ const cancelDelete = () => {
                   updated[index] = newName;
                   setLists(updated);
                 }}
-                onSubmit={(finalName) => handleListNameChange(finalName.slice(0, 10), index)}
+                onSubmit={(finalName) => {
+                  handleListNameChange(finalName.slice(0, 10), index);
+                  setEditingListIndex(null);  // 편집 상태 해제
+                }}
                 onLongPress={() => setLongPressedIndex(index)}
                 showDelete={longPressedIndex === index}
                 onDeleteRequest={() => handleDeleteRequest(index)}
@@ -381,7 +391,11 @@ const cancelDelete = () => {
                 updatedSets[selectedIndex][index].name = newName;
                 setDeviceSets(updatedSets);
               }}
-              onSubmit={(finalName) => handleDeviceNameChange(finalName.slice(0, 10), index)}
+              onSubmit={(finalName) => {
+              handleDeviceNameChange(finalName.slice(0, 10), index);
+              setEditingDeviceIndex(null);  // 편집 상태 해제
+              }}
+
             />
           )}
           keyExtractor={(item) => item.deviceId.toString()}
