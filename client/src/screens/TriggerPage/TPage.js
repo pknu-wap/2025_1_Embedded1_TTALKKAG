@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ScrollView, View, TouchableOpacity, FlatList, Text, Alert,
+  ScrollView, View, TouchableOpacity, FlatList, Text, Alert,Pressable,
 } from 'react-native';
 import Background from "./components/Background";
 import { AppText, styles as appTextStyles } from "./components/AppText";
@@ -230,6 +230,7 @@ const handleDeleteRequest = (index) => {
   // 삭제 요청 취소 함수
 const cancelDelete = () => {
   setConfirmDeleteIndex(null);
+  setLongPressedIndex(null); 
 };
 
 //목록 이름 변경 
@@ -280,7 +281,7 @@ const cancelDelete = () => {
 
 
   return (
-    <View style={{ flex: 1 }}>
+    <Pressable onPress={() => setLongPressedIndex(null)} style={{ flex: 1 }}>
       <Background />
       <AppText style={appTextStyles.text1}>TTALKKAG</AppText>
       <AppText style={appTextStyles.text3}>Trigger</AppText>
@@ -288,9 +289,21 @@ const cancelDelete = () => {
 
       {/* 목록 */}
       <View style={{ height: 60, marginTop: 20 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 35 }}>
+       <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 35 }}
+        >
           {lists.map((item, index) => (
-            <TouchableOpacity key={index} onPress={() => setSelectedIndex(index)} activeOpacity={1}>
+           <TouchableOpacity
+              key={index}
+              onPress={() => {
+                setSelectedIndex(index);
+                setLongPressedIndex(null); // 목록 누르면 삭제모드 해제
+                setConfirmDeleteIndex(null);
+              }}
+              activeOpacity={1}
+            >
               <TriggerList
                 text={item}
                 isSelected={selectedIndex === index}
@@ -377,7 +390,7 @@ const cancelDelete = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
-    </View>
+    </Pressable>
   );
 };
 

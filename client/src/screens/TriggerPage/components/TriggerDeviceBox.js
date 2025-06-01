@@ -1,10 +1,19 @@
 import React from 'react';
 import {
-  Text, TouchableOpacity, Image, ImageBackground, StyleSheet, TextInput
+  Text, TouchableOpacity, Image, ImageBackground, StyleSheet, TextInput,View
 } from 'react-native';
 
 const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNameChange, onSubmit }) => {
   const isOn = item.status;
+
+    // 타입별 아이콘 설정
+  let iconSource= require('../../../../assets/device_icon.png');
+  if (item.deviceType === "dial_actuator") {
+    iconSource = require('../../../../assets/dial_icon.png');
+  } else if (item.deviceType === "button_clicker") {
+    iconSource = require('../../../../assets/button_icon.png');
+  } 
+  console.log('전체 item:', item);
 
   return (
     <TouchableOpacity onPress={() => {
@@ -23,10 +32,15 @@ const TriggerDeviceBox = ({ item, index, onToggle, isEditing, onEditStart, onNam
         style={styles.box}
         imageStyle={{ borderRadius: 20 }}
       >
-        <Image
-          source={require('../../../../assets/device_icon.png')}
-          style={styles.icon}
-        />
+           {/* 디바이스 아이콘 영역 */}
+        <View style={styles.headerRow}>
+          <Image
+            source={iconSource}
+            style={styles.deviceIcon}
+            resizeMode="contain"
+          />
+        </View>
+
         <TouchableOpacity onPress={onEditStart}>
           {isEditing ? (
             <TextInput
@@ -67,6 +81,13 @@ const styles = StyleSheet.create({
     padding: 10,
     position: 'relative',
   },
+ deviceIcon: {
+  width: 45,
+  height: 45,
+  position: 'absolute', // 절대 위치
+  top: 20,              // Y축 위치 조정
+  left: 10,             // X축 위치 조정
+},
   icon: {
     width: 37,
     height: 30,
@@ -89,6 +110,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     width: 120,
   },
+  headerRow: {
+  height: 70,  // 아이콘 높이 이상으로 설정
+  position: 'relative',
+},
 });
 
 export { TriggerDeviceBox };
