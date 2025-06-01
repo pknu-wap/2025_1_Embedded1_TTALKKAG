@@ -37,6 +37,8 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
   const [dialValue, setDialValue] = useState(dialStep);  //다이얼 값 
   const [isEditingStep, setIsEditingStep] = useState(false); //스텝 수정모드 
   const [step, setStep] = useState(stepUnit);  // 다이얼 스텝 값 
+  const [isDialBusy, setIsDialBusy] = useState(false); // 업/다운 버튼 동작 중 여부
+
   const DIAL_MIN = 0;
   const DIAL_MAX = 100;
 
@@ -114,19 +116,24 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
 
   // 다이얼 업다운 조정 통신
   const handleDialButton = async (command) => {
-  try {
-    await pressDialButoon(id, command);
-    console.log(`요청 성공`);
-    setDialValue((prev) => {
-      if (command === "up") return Math.min(DIAL_MAX, prev + step);
-      if (command === "down") return Math.max(DIAL_MIN, prev - step);
-      return prev;
-    });
-  } catch (err) {
-    Alert.alert("제어 실패");
-    console.error(`실패:`, err.message, err.response?.data);
+    if (isDialBusy) return; 
+    setIsDialBusy(true);
+    try {
+      await pressDialButoon(id, command);
+      console.log(`요청 성공`);
+      setDialValue((prev) => {
+        if (command === "up") return Math.min(DIAL_MAX, prev + step);
+        if (command === "down") return Math.max(DIAL_MIN, prev - step);
+        return prev;
+      });
+    } catch (err) {
+      Alert.alert("제어 실패");
+      console.error(`실패:`, err.message, err.response?.data);
+    }
+    finally {
+    setIsDialBusy(false); 
   }
-};
+  };
 
   // 메모 저장 api
   const handleMemoSave = async () => {
@@ -354,7 +361,7 @@ if (type === "dial_actuator") {
        <TouchableOpacity
           style={[styles.dialBtn, dialValue + step > DIAL_MAX && styles.dialBtnDisabled]}
           onPress={() => handleDialButton("up")}
-          disabled={dialValue + step > DIAL_MAX}
+          disabled={dialValue + step > DIAL_MAX || isDialBusy}
         >
           <Image 
           source={require('../../../../assets/up.png')} 
@@ -364,7 +371,7 @@ if (type === "dial_actuator") {
       <TouchableOpacity
         style={[styles.dialBtn, dialValue - step < DIAL_MIN && styles.dialBtnDisabled]}
         onPress={() => handleDialButton("down")}
-        disabled={dialValue - step < DIAL_MIN}
+        disabled={dialValue - step < DIAL_MIN || isDialBusy} 
       >
           <Image 
           source={require('../../../../assets/down.png')}

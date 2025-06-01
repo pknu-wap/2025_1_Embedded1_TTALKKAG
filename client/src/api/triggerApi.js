@@ -86,6 +86,7 @@ export const changeDeviceName = async (deviceId, type, newName) => {
         "Accept": "application/json"
       }
     });
+    console.log('디바이스 이름변경 성공');
     return response.data;
   } catch (error) {
     console.error('디바이스 이름 변경 실패:', error);
@@ -107,6 +108,7 @@ export const changeListName = async (deviceId, type, newName) => {
         "Accept": "application/json"
       }
     });
+    console.log('목록 이름 변경 성공');
     return response.data;
   } catch (error) {
     console.error('목록 이름 변경 실패:', error);
