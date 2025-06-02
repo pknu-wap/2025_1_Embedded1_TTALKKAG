@@ -7,7 +7,7 @@ import DeviceBox from "./components/DeviceBox.js";
 import { fetchDeviceList } from "../../api/deviceApi"; 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useRef } from 'react';
-
+import { Keyboard, TouchableWithoutFeedback } from "react-native";
 const DPage = () => {
   const tabBarHeight = useBottomTabBarHeight(); // 하단 탭바 높이를 가져와서 ScrollView 패딩에 반영
   const [deviceList, setDeviceList] = useState([]); // 기기 목록을 저장할 state
@@ -70,12 +70,13 @@ const DPage = () => {
       <KeyboardAwareScrollView
       ref={scrollRef}
        style={{ flex: 1 , marginTop:20}}
-        contentContainerStyle={{ flexGrow:1, paddingBottom: tabBarHeight + 10 }}
+        contentContainerStyle={{ flexGrow:1, paddingBottom: tabBarHeight + 30 }}
         showsVerticalScrollIndicator={false}
-         keyboardShouldPersistTaps="always"
+          keyboardShouldPersistTaps="handled"
+
         enableOnAndroid={true}
-      extraScrollHeight={100}
-      keyboardOpeningTime={0}
+        extraScrollHeight={150}
+        keyboardOpeningTime={0}
       enableResetScrollToCoords={false}
            refreshControl={
           <RefreshControl
