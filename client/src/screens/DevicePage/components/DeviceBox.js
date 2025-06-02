@@ -9,37 +9,45 @@ import {
   TextInput,
   Animated,
   Alert,
+  ImageBackground
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo } from '../../../api/deviceApi';
+import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
-const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
-  const [expanded, setExpanded] = useState(false);
-  const [pressed, setPressed] = useState(false);
+const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUnit  }) => {
+  
+  
+  const [expanded, setExpanded] = useState(false); // 다이얼 확장 여부
 
   // 이름 수정 관련 상태
-  const [isEditing, setIsEditing] = useState(false);
-  const [deviceName, setDeviceName] = useState(name);
-  const [tempName, setTempName] = useState(name);
+  const [isEditing, setIsEditing] = useState(false); //이름 수정중인 모드
+  const [deviceName, setDeviceName] = useState(name); // 현재 디바이스 이름
+  const [tempName, setTempName] = useState(name); // 임시로 이름 입력값
   
-  // 오른쪽 borderRadius 
+  // 오른쪽 borderRadius: 스와이프시 변화
   const [rightRadius, setRightRadius] = useState(31);
 
-  const [memoValue, setMemoValue] = useState(memo || '');
-  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  // 메모 관련 상태
+  const [memoValue, setMemoValue] = useState(memo || '');  // 메모 입력값
+  const [isEditingMemo, setIsEditingMemo] = useState(false); // 메모 수정모드
+
+  // 다이얼 관련 상태 
+  const [dialValue, setDialValue] = useState(dialStep);  //다이얼 값 
+  const [isEditingStep, setIsEditingStep] = useState(false); //스텝 수정모드 
+  const [step, setStep] = useState(stepUnit);  // 다이얼 스텝 값 
+  const [isDialBusy, setIsDialBusy] = useState(false); // 업/다운 버튼 동작 중 여부
+
+  const DIAL_MIN = 0;
+  const DIAL_MAX = 100;
 
   // 전원 버튼
   const handlePress = async () => {
-    const start = Date.now();
     try {
       await pressDevice(id);
-      const end = Date.now();
-      console.log(`제어 응답 시간: ${end - start}ms`);
-      setPressed(prev => !prev); 
+      console.log("전원버튼 요청 성공")
     } catch (err) {
-      setPressed(prev => !prev);
       Alert.alert("제어 실패");
     }
   };
@@ -56,11 +64,9 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
       try {
         await changeDeviceName(id, type, tempName);
         console.log("이름변경 성공")
-
         setDeviceName(tempName);
       } catch (err) {
         console.log("이름 변경 실패:", err.message, err.response?.data);
-
         setTempName(deviceName);
       }
     }
@@ -82,7 +88,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
               await deleteDevice({ type, deviceId: id });
               onDelete(id,type); 
             } catch (err) {
-              Alert.alert("삭제 실패", "기기를 제거하는 중 오류가 발생했습니다.");
+              Alert.alert("삭제 실패");
               console.log("에러메시지", err.message)
             }
           }
@@ -91,7 +97,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
     );
   };
   
-  // 삭제 버튼
+  // 스와이프시 삭제 버튼
   const renderRightActions = (progress, dragX) => {
     const trans = dragX.interpolate({
       inputRange: [-100, 0],
@@ -107,6 +113,28 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
       </Animated.View>
     );
   };
+
+  // 다이얼 업다운 조정 통신
+  const handleDialButton = async (command) => {
+    if (isDialBusy) return; 
+    setIsDialBusy(true);
+    try {
+      await pressDialButoon(id, command);
+      console.log(`요청 성공`);
+      setDialValue((prev) => {
+        if (command === "up") return Math.min(DIAL_MAX, prev + step);
+        if (command === "down") return Math.max(DIAL_MIN, prev - step);
+        return prev;
+      });
+    } catch (err) {
+      Alert.alert("제어 실패");
+      console.error(`실패:`, err.message, err.response?.data);
+    }
+    finally {
+    setIsDialBusy(false); 
+  }
+  };
+
   // 메모 저장 api
   const handleMemoSave = async () => {
     setIsEditingMemo(false);
@@ -119,6 +147,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
     }
   };
   
+  // 다이얼변수 다이얼이면 토글창 보이게하기 위해서
   const isDial = type === "dial_actuator";
   const isExpanded = isDial && expanded;
 
@@ -130,8 +159,18 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
       borderBottomRightRadius: isExpanded ? 0 : 31, // 확장 시 0, 아니면 31
     }
   ];
+
+  // 타입별 아이콘 
+let iconSource;
+if (type === "dial_actuator") {
+  iconSource = require('../../../../assets/dial_icon.png');
+} else if (type === "button_clicker") {
+  iconSource = require('../../../../assets/button_icon.png');
+} 
+
   return (
     <View style={styles.wrapper}>
+      {/* 스와이프 삭제 기능 */}
       <Swipeable
         renderRightActions={renderRightActions}
         overshootRight={false}
@@ -140,6 +179,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
         onSwipeableOpen={() => setRightRadius(0)}
         onSwipeableClose={() => setRightRadius(31)}
       >
+        
         <View style={[
           styles.innerBox,
           expanded && isDial && styles.innerBoxExpanded,
@@ -149,19 +189,28 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
             borderBottomRightRadius: expanded ? 0 : rightRadius,
           }
         ]}>
+           {/* 다이얼이면 토글 버튼 */}
           {isDial && (
-            <TouchableOpacity style={styles.chevronBtn} onPress={() => setExpanded(e => !e)}>
-              <Text style={styles.chevron}>{expanded ? "▼" : "▶"}</Text>
+            <TouchableOpacity style={styles.toggleBtn} onPress={() => setExpanded(e => !e)}>
+              <Image
+                source={
+                  expanded
+                    ? require('../../../../assets/toggle-down.png')
+                    : require('../../../../assets/toggle-right.png')
+                }
+                style={styles.toggleImage}
+              />
             </TouchableOpacity>
           )}
-
+             {/* 디바이스 아이콘 영역 */}
           <View style={styles.headerRow}>
             <Image
-              source={require('../../../../assets/device_icon.png')}
+              source={iconSource}
               style={styles.deviceIcon}
               resizeMode="contain"
             />
 
+             {/* 디바이스 이름 영역 */}
             <View style={styles.textArea}>
               {isEditing ? (
                 <TextInput
@@ -178,7 +227,7 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
                   <Text style={styles.deviceTitle} numberOfLines={1} ellipsizeMode="tail">{deviceName}</Text>
                 </TouchableOpacity>
               )}
-                 {/* 메모 입력/표시 영역 */}
+                 {/* 메모 입력/표시시 영역 */}
                   <View style={styles.memoRow}>
                     {isEditingMemo ? (
                       <>
@@ -223,14 +272,10 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
                     )}
                   </View>
                 </View>
-
+              {/* 전원 버튼 */}
             <TouchableOpacity onPress={handlePress}>
               <Image
-                source={
-                  pressed
-                    ? require('../../../../assets/power_on.png')
-                    : require('../../../../assets/power_off.png')
-                }
+                source={require('../../../../assets/power_on.png')}
                 style={styles.powerBtn}
                 resizeMode="contain"
               />
@@ -238,11 +283,106 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo  }) => {
           </View>
         </View>
       </Swipeable>
+      {/*  다이얼 확장 */}
       {isDial && expanded && (
-        <View style={[styles.expandedBox]}>
-          {/* 확장 시 보여질 내용 */}
+  <View style={styles.expandedBox}>
+    <View style={styles.dialRow}>
+      {/*  다이얼 값 스텝 조정 박스 */}
+    <View style={styles.dialValueBox}>
+    <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => setIsEditingStep(true)}
+    style={{ borderRadius: 12, overflow: "hidden" }}
+  >
+  <ImageBackground
+    source={require('../../../../assets/dial_bg.png')}
+    style={{ width: 240, height: 100, justifyContent: "center", marginLeft:30 }}
+    imageStyle={{ borderRadius: 10 }}
+  >
+    {isEditingStep ? (
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ fontSize: 20, marginRight: 8 }}>스텝조정:</Text>
+          <TextInput
+            style={{
+              fontSize: 28,
+              fontWeight: "bold",
+              color: "#222",
+              width: 60,
+              borderBottomWidth: 1,
+              borderColor: "#4999BA",
+              textAlign: "center"
+            }}
+            value={step === "" ? "" : String(step)}
+            keyboardType="number-pad"
+            maxLength={2}
+            autoFocus
+            onChangeText={txt => {
+              const onlyNum = txt.replace(/[^0-9]/g, "");
+              if (onlyNum === "") {
+                setStep("");
+                return;
+              }
+              let num = Number(onlyNum);
+              if (num < 1) num = 1;
+              if (num > 50) num = 50;
+              setStep(num);
+            }}
+           onBlur={async () => {
+            // 입력값 보정
+            let sendStep = step;
+            if (sendStep === "" || Number(sendStep) < 1) sendStep = 1;
+            if (Number(sendStep) > 50) sendStep = 50;
+            setStep(sendStep);
+
+            try {
+              await setDialStepUnit(id, Number(sendStep));
+              setDialValue(0); //0으로 초기화
+              console.log("스텝 유닛 설정 성공");
+            } catch (err) {
+              Alert.alert("스텝 유닛 설정 실패");
+              console.error("스텝 유닛 실패:", err.message, err.response?.data);
+            }
+            setIsEditingStep(false);
+          }}
+
+          />
+        </View>
+      ) : (
+       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Text style={styles.dialValueText}>{dialValue}</Text>
+          <Text style={styles.dialValueText}> / {DIAL_MAX}</Text>
         </View>
       )}
+  </ImageBackground>
+  </TouchableOpacity>
+</View>
+         {/* 업다운 버튼 */}
+      <View style={styles.dialButtonCol}>
+       <TouchableOpacity
+          style={[styles.dialBtn, dialValue + step > DIAL_MAX && styles.dialBtnDisabled]}
+          onPress={() => handleDialButton("up")}
+          disabled={dialValue + step > DIAL_MAX || isDialBusy}
+        >
+          <Image 
+          source={require('../../../../assets/up.png')} 
+          style={{ width: 100, height: 45, marginTop: 100, marginBottom: 10}}
+          resizeMode="contain" />
+        </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.dialBtn, dialValue - step < DIAL_MIN && styles.dialBtnDisabled]}
+        onPress={() => handleDialButton("down")}
+        disabled={dialValue - step < DIAL_MIN || isDialBusy} 
+      >
+          <Image 
+          source={require('../../../../assets/down.png')}
+          style={{ width: 100, height: 45, marginBottom: 45 }}
+          resizeMode="contain"/>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+)}
+
     </View>
   );
 };
@@ -267,16 +407,17 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
-  chevronBtn: {
+  toggleBtn: {
     position: "absolute",
-    top: 2,
-    right: 5,
-    zIndex: 10,
-    padding: 6,
+    top: 20,
+    right: 10,
   },
-  chevron: {
-    fontSize: 15,
-  },
+  toggleImage: {
+  width: 18,  
+  height: 18,
+  resizeMode: 'contain',
+},
+
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -285,8 +426,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   deviceIcon: {
-    width: 60,
-    height: 60,
+    width: 65,
+    height: 65,
     marginLeft: 10,
   },
   textArea: {
@@ -298,7 +439,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 19,
     color: "#4999BA",
-    marginTop: 10,
+    marginTop: 1,
     
   },
   powerBtn: {
@@ -308,7 +449,7 @@ const styles = StyleSheet.create({
   },
   expandedBox: {
     width: width * 0.85,
-    height: height * 0.13,
+    height: height * 0.18,
     backgroundColor: "white",
     borderLeftWidth: 1,
     borderRightWidth: 1,
@@ -331,8 +472,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff4d4d',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 100,
-    height: height * 0.15,
+    width: 110,
+    height: height * 0.18,
     borderTopRightRadius: 31,
     borderBottomRightRadius: 31,
   },
@@ -344,9 +485,9 @@ const styles = StyleSheet.create({
   memoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
-  memoDisplay: {
+  memoDisplay: { 
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
@@ -359,9 +500,6 @@ const styles = StyleSheet.create({
   },
   memoTextPlaceholder: {
     color: "#b0b0b0",
-  },
-  memoTextFilled: {
-   
   },
   memoIcon: {
     width: 14,
@@ -378,6 +516,33 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   
   },
+  dialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+  },
+  dialValueBox: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dialValueText: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#222",
+  },
+  dialButtonCol: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 10
+  },
+
+  dialBtnDisabled: {
+    opacity: 0.3,
+  },
+
   
 });
 

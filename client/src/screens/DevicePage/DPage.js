@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View,RefreshControl } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import Background from "./components/Background.js";
 import { AppText, styles as appTextStyles } from "./components/AppText.js";
@@ -11,7 +11,7 @@ import { fetchDeviceList } from "../../api/deviceApi";
 const DPage = () => {
   const tabBarHeight = useBottomTabBarHeight(); // 하단 탭바 높이를 가져와서 ScrollView 패딩에 반영
   const [deviceList, setDeviceList] = useState([]); // 기기 목록을 저장할 state
-
+  const [refreshing, setRefreshing] = useState(false);
   // 기기 목록 불러오는
   const loadDevices = async () => {
     try {
@@ -45,7 +45,11 @@ const DPage = () => {
       )
     );
   };
-  
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDevices();
+    setRefreshing(false);
+  };
   useEffect(() => {
     loadDevices();
   }, []);
@@ -55,16 +59,26 @@ const DPage = () => {
   return (
     <View style={{ flex: 1 }}>
       <Background />
+      <AppText style={appTextStyles.text1}>TTALKKAG</AppText>
+      <AppText style={appTextStyles.text3}>Device</AppText>
+      <AppText style={appTextStyles.text2}>디바이스 페이지</AppText>
+      <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
+
+      
       {/* 기기 리스트를 스크롤 가능한 영역에 렌더링 탭바 가리지 않도록 하단 패딩 추가 */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
+       style={{ flex: 1 , marginTop:20}}
+        contentContainerStyle={{ flexGrow:1, paddingBottom: tabBarHeight + 10 }}
         showsVerticalScrollIndicator={false}
+           refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#4999BA"]}
+          />
+        }
       >
-        <AppText style={appTextStyles.text1}>TTALKKACK</AppText>
-        <AppText style={appTextStyles.text3}>Device</AppText>
-        <AppText style={appTextStyles.text2}>디바이스 페이지</AppText>
-        <AppText style={appTextStyles.text4}>내 기기 My Devices</AppText>
-
+        
         {/* 기기 목록을 map으로 순회하여 DeviceBox 컴포넌트로 렌더링 */}
         {deviceList.map((device) => (
           <DeviceBox
@@ -75,6 +89,10 @@ const DPage = () => {
             memo={device.memo}
             onDelete={handleDeviceDelete} 
             onUpdateMemo={handleDeviceMemoUpdate} 
+            {...(device.type === "dial_actuator" && {
+            dialStep: device.step,
+            stepUnit: device.stepUnit
+          })}
           />
         ))}
       </ScrollView>
