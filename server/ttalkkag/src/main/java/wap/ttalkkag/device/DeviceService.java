@@ -143,7 +143,7 @@ public class DeviceService {
             }
             case "press" -> {
                 String topic = "server/action/dial_actuator/" + dial.getClientId();
-                String payload = "press!";
+                String payload = "";
                 mqttPublisherSevice.publish(topic, payload);
             }
             default -> throw new IllegalArgumentException("Invalid command");
@@ -152,7 +152,7 @@ public class DeviceService {
         if (updated) {
             dialRepository.save(dial);
             String topic = "server/" + command + "/dial_actuator/" + dial.getClientId();
-            String payload = "action!";
+            String payload = "";
             mqttPublisherSevice.publish(topic, payload);
         }
     }
