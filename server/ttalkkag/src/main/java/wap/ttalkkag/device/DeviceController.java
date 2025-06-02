@@ -42,7 +42,7 @@ public class DeviceController {
 
         return ResponseEntity.ok().build();
     }
-    /*다이얼 원격 조정 Up, Down*/
+    /*다이얼 원격 조정 Up, Down, Press*/
     @PostMapping("/up-down")
     public ResponseEntity<Void> remoteDial(@RequestBody RemoteDialDTO request) {
         deviceService.remoteDial(request);
