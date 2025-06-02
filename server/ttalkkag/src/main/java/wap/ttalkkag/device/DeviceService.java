@@ -116,36 +116,43 @@ public class DeviceService {
             /*스텝 유닛 변경 내용을 디바이스에 알림*/
             String clientId = dial.getClientId();
             String topic = "server/step/dial_actuator/" + clientId;
-            String payload = String.format("{\"step\": %d}", newStepUnit);
+            String payload = String.format("{\"stepUnit\": %d}", newStepUnit);
             mqttPublisherSevice.publish(topic, payload);
         }
     }
-    /*다이얼 원격 조정 Up, Down*/
+    /*다이얼 원격 조정 Up, Down, Press*/
     public void remoteDial(RemoteDialDTO request) {
         Dial dial = dialRepository.findById(request.getDeviceId()).orElseThrow(() -> new RuntimeException("Device not found"));
         String command = request.getCommand();
         boolean updated = false;
         /*다음 스텝이 0 이상 100 이하 일때만 DB 갱신 및 통신*/
-        if (command.equals("up")) {
-            int nextStep = dial.getStep() + dial.getStepUnit();
-            if (nextStep <= 100) {
-                dial.setStep(nextStep);
-                updated = true;
+        switch(command) {
+            case "up" -> {
+                int nextStep = dial.getStep() + dial.getStepUnit();
+                if (nextStep <= 100) {
+                    dial.setStep(nextStep);
+                    updated = true;
+                }
             }
-        }
-        if (command.equals("down")) {
-            int nextStep = dial.getStep() - dial.getStepUnit();
-            if (nextStep >= 0) {
-                dial.setStep(nextStep);
-                updated = true;
+            case "down" -> {
+                int nextStep = dial.getStep() - dial.getStepUnit();
+                if (nextStep >= 0) {
+                    dial.setStep(nextStep);
+                    updated = true;
+                }
             }
+            case "press" -> {
+                String topic = "server/action/dial_actuator/" + dial.getClientId();
+                String payload = "press!";
+                mqttPublisherSevice.publish(topic, payload);
+            }
+            default -> throw new IllegalArgumentException("Invalid command");
         }
-        dialRepository.save(dial);
         /*DB에 갱신이 있는 경우에 기기에 송신*/
         if (updated) {
-            String clientId = dial.getClientId();
-            String topic = "server/" + command + "/dial_actuator/" + clientId;
-            String payload = "";
+            dialRepository.save(dial);
+            String topic = "server/" + command + "/dial_actuator/" + dial.getClientId();
+            String payload = "action!";
             mqttPublisherSevice.publish(topic, payload);
         }
     }
