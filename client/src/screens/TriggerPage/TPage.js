@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   ScrollView, View, TouchableOpacity, FlatList, Text, Alert,Pressable,
 } from 'react-native';
@@ -17,7 +18,7 @@ import {
   deleteDevice,
 } from "../../api/triggerApi";
 
-const TPage = () => {
+const TPage = ({ navigation }) => {
   const [lists, setLists] = useState([]); // 목록 이름들
   const [selectedIndex, setSelectedIndex] = useState(0); // 현재 선택된 목록 인덱스
   const [deviceSets, setDeviceSets] = useState([]); // 각 목록별 디바이스 상태
@@ -26,72 +27,63 @@ const TPage = () => {
   const [longPressedIndex, setLongPressedIndex] = useState(null); // 목록 꾹 누름 인덱스
   const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null); // 삭제 확인용 인덱스
   const [listObjects, setListObjects] = useState([]); // 목록 전체 객체들 (id 포함)
-
+useFocusEffect(
+  useCallback(() => {
+    loadAll(setLists, setListObjects, setDeviceSets, setSelectedIndex);
+  }, [])
+);
   // 앱이 켜지면 목록과 디바이스 불러오기
-  useEffect(() => {
-  const loadAll = async () => {
-    try {
-      //  UI 테스트용 더미 데이터 
-      
-      /*const dummyDevices = [
-        { name: '버튼 1', deviceId: 101, deviceType: 'button_clicker', status: false },
-        { name: '버튼 2', deviceId: 102, deviceType: 'button_clicker', status: true },
-        { name: '다이얼 1', deviceId: 201, deviceType: 'dial_actuator', status: false },
-        { name: '다이얼 2', deviceId: 202, deviceType: 'dial_actuator', status: true },
-      ];
-      setLists(['테스트 목록 A', '테스트 목록 B']);
-      setListObjects([{ id: 999 }, { id: 1000 }]); // 테스트용 트리거 ID
-      setDeviceSets([dummyDevices, dummyDevices]); // 두 개 목록에 동일한 디바이스들
-      return;  */
-      
-      // 1. 전체 기기 목록 불러오기 (off 상태로 초기화)
-      const allDevices = await fetchDeviceList();
-      const deviceMap = {};
+  const loadAll = async (
+  setLists,
+  setListObjects,
+  setDeviceSets,
+  setSelectedIndex
+) => {
+  console.log("[트리거 페이지 새로고침 실행]");
+  try {
+    // 1. 전체 기기 목록 불러오기 (off 상태로 초기화)
+    const allDevices = await fetchDeviceList();
 
-      const allDeviceBoxes = [
-        ...allDevices.data.buttons.map(b => {
-          const obj = { name: b.name, deviceId: b.id, deviceType: "button_clicker", status: false };
-          deviceMap[`${b.id}_button_clicker`] = obj;
-          return obj;
-        }),
-        ...allDevices.data.dials.map(d => {
-          const obj = { name: d.name, deviceId: d.id, deviceType: "dial_actuator", status: false };
-          deviceMap[`${d.id}_dial_actuator`] = obj;
-          return obj;
-        })
-      ];
-
-      // 2. 트리거 목록 불러오기
-      const triggerLists = await fetchTriggerLists();
-      setLists(triggerLists.map(item => item.name));
-      setListObjects(triggerLists);
-
+    const allDeviceBoxes = [
+      ...allDevices.data.buttons.map(b => ({
+        name: b.name,
+        deviceId: b.id,
+        deviceType: "button_clicker",
+        status: false
+      })),
+      ...allDevices.data.dials.map(d => ({
+        name: d.name,
+        deviceId: d.id,
+        deviceType: "dial_actuator",
+        status: false
+      }))
+    ];
       // 3. 트리거에 속한 디바이스 목록 불러오기 (각 목록에 대해)
-      const allDeviceSets = await Promise.all(
-        triggerLists.map(async (list) => {
-          const activeDevices = await fetchTriggerDevices(list.id);
-          const updated = allDeviceBoxes.map(device => {
-            const match = activeDevices.find(
-              ad => ad.id.deviceId === device.deviceId && ad.id.deviceType === device.deviceType
-            );
-            return {
-              ...device,
-              status: !!match  // true if match found
-            };
-          });
-          return updated;
-        })
-      );
+    const triggerLists = await fetchTriggerLists();
+    const allDeviceSets = await Promise.all(
+      triggerLists.map(async (list) => {
+        const activeDevices = await fetchTriggerDevices(list.id);
+        return allDeviceBoxes.map(device => {
+          const match = activeDevices.find(
+            ad => ad.id.deviceId === device.deviceId && ad.id.deviceType === device.deviceType
+          );
+          return {
+            ...device,
+            status: !!match
+          };
+        });
+      })
+    );
 
-      setDeviceSets(allDeviceSets);
-    } catch (err) {
-      console.error("디바이스/목록 로딩 실패:", err);
-      Alert.alert("오류", "초기 로딩에 실패했습니다.");
-    }
-  };
-
-  loadAll();
-}, []);
+    setLists(triggerLists.map(item => item.name));
+    setListObjects(triggerLists);
+    setDeviceSets(allDeviceSets);
+    setSelectedIndex(0); // 선택 초기화
+  } catch (err) {
+    console.error("디바이스/목록 로딩 실패:", err);
+    Alert.alert("오류", "초기 로딩에 실패했습니다.");
+  }
+};
 
 //목록 바뀔때마다 새로고침
 /*useEffect(() => {

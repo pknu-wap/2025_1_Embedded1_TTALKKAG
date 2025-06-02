@@ -32,7 +32,7 @@ const App = () => {
     initializeApp();
   }, []); 
 
-   if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
+  // if (loading) return <Loading />; // 로딩 화면이 끝나기 전까지 로딩 컴포넌트 표시
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -68,10 +68,10 @@ const App = () => {
           />
           <Tab.Screen
             name="트리거 목록 페이지"
-            component={TriggerPage}
+            children={({ navigation }) => <TriggerPage navigation={navigation} />}
             options={{
               tabBarLabel: "Trigger",
-              tabBarIcon: ({ focused, color, size }) => (
+              tabBarIcon: ({ focused }) => (
                 <Image
                   source={require("./assets/TriggerNav.png")}
                   style={{
