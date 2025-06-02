@@ -240,9 +240,9 @@ useEffect(() => {
                   returnKeyType="done"
                   borderBottomWidth={0}
                   maxLength={15}
-                     onFocus={event => {
-                scrollRef?.current?.scrollToFocusedInput?.(event.target);
-              }}
+               onFocus={event => {
+    scrollRef?.current?.scrollToFocusedInput?.(event.target, 200); 
+  }}
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditing(true)}>
@@ -264,9 +264,9 @@ useEffect(() => {
                           onBlur={handleMemoSave}
                           onSubmitEditing={handleMemoSave}
                           autoFocus
-                            onFocus={event => {
-                    scrollRef?.current?.scrollToFocusedInput?.(event.target);
-                  }}
+                           onFocus={event => {
+    scrollRef?.current?.scrollToFocusedInput?.(event.target, 200); 
+  }}
                         />
                         <Image
                           source={require("../../../../assets/pencil_icon.png")}
