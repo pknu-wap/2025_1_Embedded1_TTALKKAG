@@ -9,10 +9,11 @@ import {
   TextInput,
   Animated,
   Alert,
-  ImageBackground
+  ImageBackground,
+  KeyboardAvoidingView
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit } from '../../../api/deviceApi';
+import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit,scrollRef } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
@@ -221,6 +222,9 @@ if (type === "dial_actuator") {
                   returnKeyType="done"
                   borderBottomWidth={0}
                   maxLength={15}
+                     onFocus={event => {
+                scrollRef?.current?.scrollToFocusedInput?.(event.target);
+              }}
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditing(true)}>
@@ -242,6 +246,9 @@ if (type === "dial_actuator") {
                           onBlur={handleMemoSave}
                           onSubmitEditing={handleMemoSave}
                           autoFocus
+                            onFocus={event => {
+                    scrollRef?.current?.scrollToFocusedInput?.(event.target);
+                  }}
                         />
                         <Image
                           source={require("../../../../assets/pencil_icon.png")}

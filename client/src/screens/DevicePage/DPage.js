@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View,RefreshControl } from "react-native";
+import { ScrollView, View,RefreshControl} from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import Background from "./components/Background.js";
 import { AppText, styles as appTextStyles } from "./components/AppText.js";
 import DeviceBox from "./components/DeviceBox.js";
 import { fetchDeviceList } from "../../api/deviceApi"; 
-
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useRef } from 'react';
 
 const DPage = () => {
   const tabBarHeight = useBottomTabBarHeight(); // 하단 탭바 높이를 가져와서 ScrollView 패딩에 반영
   const [deviceList, setDeviceList] = useState([]); // 기기 목록을 저장할 state
   const [refreshing, setRefreshing] = useState(false);
+   const scrollRef = useRef(null);
   // 기기 목록 불러오는
   const loadDevices = async () => {
     try {
@@ -66,10 +67,16 @@ const DPage = () => {
 
       
       {/* 기기 리스트를 스크롤 가능한 영역에 렌더링 탭바 가리지 않도록 하단 패딩 추가 */}
-      <ScrollView
+      <KeyboardAwareScrollView
+      ref={scrollRef}
        style={{ flex: 1 , marginTop:20}}
         contentContainerStyle={{ flexGrow:1, paddingBottom: tabBarHeight + 10 }}
         showsVerticalScrollIndicator={false}
+         keyboardShouldPersistTaps="always"
+        enableOnAndroid={true}
+      extraScrollHeight={100}
+      keyboardOpeningTime={0}
+      enableResetScrollToCoords={false}
            refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -89,13 +96,16 @@ const DPage = () => {
             memo={device.memo}
             onDelete={handleDeviceDelete} 
             onUpdateMemo={handleDeviceMemoUpdate} 
+
+            scrollRef={scrollRef}
+
             {...(device.type === "dial_actuator" && {
             dialStep: device.step,
             stepUnit: device.stepUnit
           })}
           />
         ))}
-      </ScrollView>
+       </KeyboardAwareScrollView>
     </View>
   );
 };
