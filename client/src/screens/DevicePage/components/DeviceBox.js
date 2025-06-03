@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useRef,useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   TextInput,
   Animated,
   Alert,
-  ImageBackground
+  ImageBackground,
+  Keyboard
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit } from '../../../api/deviceApi';
+import { pressDevice, changeDeviceName, deleteDevice,saveDeviceMemo,pressDialButoon,setDialStepUnit,scrollRef } from '../../../api/deviceApi';
 
 const { width, height } = Dimensions.get("window");
 
@@ -51,26 +52,27 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
       Alert.alert("제어 실패");
     }
   };
+  
+  // 중복 저장 방지용 ref
+  const hasSavedName = useRef(false);
+  const hasSavedMemo = useRef(false);
 
   // 이름 수정
-  const handleName = async () => {
-    if (tempName.trim() === '') {
+const handleName = async () => {
+  if (!isEditing) return; // 이미 편집 모드가 아니면 무시
+  if (tempName.trim() === '') {
+    setTempName(deviceName);
+  } else if (tempName !== deviceName) {
+    try {
+      await changeDeviceName(id, type, tempName);
+      setDeviceName(tempName);
+    } catch (err) {
       setTempName(deviceName);
-      setIsEditing(false);
-      return;
     }
-    setIsEditing(false);
-    if (tempName !== deviceName) {
-      try {
-        await changeDeviceName(id, type, tempName);
-        console.log("이름변경 성공")
-        setDeviceName(tempName);
-      } catch (err) {
-        console.log("이름 변경 실패:", err.message, err.response?.data);
-        setTempName(deviceName);
-      }
-    }
-  };
+  }
+  setIsEditing(false); // 저장 끝나고 나서 닫기
+};
+
 
   // 삭제
   const handleDelete = async () => {
@@ -135,17 +137,15 @@ const DeviceBox = ({ id, name, type, onDelete,memo ,onUpdateMemo,dialStep,stepUn
   }
   };
 
-  // 메모 저장 api
-  const handleMemoSave = async () => {
-    setIsEditingMemo(false);
-    try {
-      await saveDeviceMemo(id, type, memoValue);
-      console.log("메모 저장 성공");
-      onUpdateMemo?.(id,type, memoValue); // 부모에게 변경 알림
-    } catch (err) {
-      console.error("메모 저장 실패:", err.message, err.response?.data);
-    }
-  };
+// 메모 저장 함수
+const handleMemoSave = async () => {
+  if (!isEditingMemo) return;
+  try {
+    await saveDeviceMemo(id, type, memoValue);
+    onUpdateMemo?.(id, type, memoValue);
+  } catch (err) {}
+  setIsEditingMemo(false);
+};
   
   // 다이얼변수 다이얼이면 토글창 보이게하기 위해서
   const isDial = type === "dial_actuator";
@@ -167,6 +167,25 @@ if (type === "dial_actuator") {
 } else if (type === "button_clicker") {
   iconSource = require('../../../../assets/button_icon.png');
 } 
+// 이름 입력 중 키보드 내려갈 때 자동 저장
+useEffect(() => {
+  if (!isEditing) return;
+  const onKeyboardHide = () => {
+    handleName();
+  };
+  const sub = Keyboard.addListener('keyboardDidHide', onKeyboardHide);
+  return () => sub.remove();
+}, [isEditing, tempName]);
+
+// 메모 입력 중 키보드 내려갈 때 자동 저장
+useEffect(() => {
+  if (!isEditingMemo) return;
+  const onKeyboardHide = () => {
+    handleMemoSave();
+  };
+  const sub = Keyboard.addListener('keyboardDidHide', onKeyboardHide);
+  return () => sub.remove();
+}, [isEditingMemo, memoValue]);
 
   return (
     <View style={styles.wrapper}>
@@ -221,6 +240,9 @@ if (type === "dial_actuator") {
                   returnKeyType="done"
                   borderBottomWidth={0}
                   maxLength={15}
+               onFocus={event => {
+    scrollRef?.current?.scrollToFocusedInput?.(event.target, 200); 
+  }}
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditing(true)}>
@@ -242,6 +264,9 @@ if (type === "dial_actuator") {
                           onBlur={handleMemoSave}
                           onSubmitEditing={handleMemoSave}
                           autoFocus
+                           onFocus={event => {
+    scrollRef?.current?.scrollToFocusedInput?.(event.target, 200); 
+  }}
                         />
                         <Image
                           source={require("../../../../assets/pencil_icon.png")}
