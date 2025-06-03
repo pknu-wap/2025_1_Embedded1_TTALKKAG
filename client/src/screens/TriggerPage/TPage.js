@@ -390,7 +390,7 @@ const cancelDelete = () => {
 
             />
           )}
-          keyExtractor={(item) => item.deviceId.toString()}
+          keyExtractor={(item) => `${item.deviceType}-${item.deviceId}`}
           numColumns={2}
           contentContainerStyle={{
           paddingBottom: 50, 
